@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" 
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI" 
+                  id="Definitions_SentinelFin" 
+                  targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_SentinelFin_AML_Case" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="Alert Triggered" />
+    
+    <!-- Stage 1: Triage & Enrichment -->
+    <bpmn:serviceTask id="Task_Agent1" name="Agent 1: Transaction Context" />
+    <bpmn:serviceTask id="Task_Agent2" name="Agent 2: Sanctions &amp; PEP Screener" />
+    <bpmn:serviceTask id="Task_Agent3" name="Agent 3: Pattern Detection" />
+    
+    <!-- Gate 1: Triage Review -->
+    <bpmn:userTask id="Task_Gate1" name="Gate 1: Triage Analyst Review" />
+    <bpmn:exclusiveGateway id="Gateway_Gate1_Decision" name="SAR Required?" />
+    
+    <!-- Stage 2: Deep Investigation -->
+    <bpmn:serviceTask id="Task_Agent4" name="Agent 4: Network Investigation" />
+    <bpmn:serviceTask id="Task_Agent5" name="Agent 5: Regulatory Intelligence" />
+    
+    <!-- Stage 3: SAR Preparation -->
+    <bpmn:serviceTask id="Task_Agent6" name="Agent 6: SAR Narrative Writer" />
+    <bpmn:serviceTask id="Task_Agent7" name="Agent 7: SAR Form Population" />
+    
+    <!-- Gate 2: BSA Officer Review -->
+    <bpmn:userTask id="Task_Gate2" name="Gate 2: BSA Officer Signature" />
+    
+    <!-- Stage 4: Submission -->
+    <bpmn:serviceTask id="Task_Agent8" name="Agent 8: Submission &amp; Audit" />
+    
+    <!-- Stage 5: Ongoing Monitoring -->
+    <bpmn:intermediateCatchEvent id="Event_90DaysTimer" name="Wait 90 Days">
+      <bpmn:timerEventDefinition id="TimerEventDefinition_1">
+        <bpmn:timeDuration>P90D</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:userTask id="Task_Gate3" name="Gate 3: 90-Day Continuation Review" />
+
+    <bpmn:endEvent id="EndEvent_Closed" name="Case Closed" />
+    <bpmn:endEvent id="EndEvent_Submitted" name="SAR Submitted" />
+
+    <!-- We would connect these with sequence flows in the actual UiPath tool, 
+         but this represents the structural nodes required by the spec. -->
+  </bpmn:process>
+</bpmn:definitions>

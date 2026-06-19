@@ -1,0 +1,29 @@
+{
+  "case_id": "CAS-2024-001",
+  "alert_type": "SUSPECTED_STRUCTURING",
+  "created_at": "2024-05-15T08:30:00Z",
+  "primary_subject": {
+    "account_id": "ACC-998877",
+    "customer_id": "CUS-10293",
+    "name": "John Doe",
+    "kyc_profile": {
+      "risk_rating": "MEDIUM",
+      "business_purpose": "Personal Checking",
+      "occupation": "Freelance Consultant",
+      "expected_monthly_volume": 5000
+    }
+  },
+  "transactions": [
+    { "txn_id": "TXN-101", "date": "2024-05-12T09:15:00Z", "amount": 9900.00, "type": "CASH_DEPOSIT", "branch_id": "BR-01" },
+    { "txn_id": "TXN-102", "date": "2024-05-12T14:30:00Z", "amount": 9900.00, "type": "CASH_DEPOSIT", "branch_id": "BR-02" },
+    { "txn_id": "TXN-103", "date": "2024-05-12T16:45:00Z", "amount": 9900.00, "type": "CASH_DEPOSIT", "branch_id": "BR-03" },
+    { "txn_id": "TXN-104", "date": "2024-05-13T10:00:00Z", "amount": 9900.00, "type": "CASH_DEPOSIT", "branch_id": "BR-01" },
+    { "txn_id": "TXN-105", "date": "2024-05-13T13:20:00Z", "amount": 9900.00, "type": "CASH_DEPOSIT", "branch_id": "BR-04" },
+    { "txn_id": "TXN-106", "date": "2024-05-13T15:50:00Z", "amount": 9900.00, "type": "CASH_DEPOSIT", "branch_id": "BR-02" },
+    { "txn_id": "TXN-107", "date": "2024-05-14T09:05:00Z", "amount": 9900.00, "type": "CASH_DEPOSIT", "branch_id": "BR-05" },
+    { "txn_id": "TXN-108", "date": "2024-05-14T11:40:00Z", "amount": 9900.00, "type": "CASH_DEPOSIT", "branch_id": "BR-01" },
+    { "txn_id": "TXN-109", "date": "2024-05-14T14:10:00Z", "amount": 9900.00, "type": "CASH_DEPOSIT", "branch_id": "BR-03" }
+  ],
+  "triggering_rule": "CASH_VELOCITY_PRE_CTR_THRESHOLD",
+  "status": "OPEN"
+}

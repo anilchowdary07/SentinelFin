@@ -1,0 +1,23 @@
+{
+  "case_id": "CAS-2024-003",
+  "alert_type": "UNUSUAL_VOLUME",
+  "created_at": "2024-05-17T14:45:00Z",
+  "primary_subject": {
+    "account_id": "ACC-112233",
+    "customer_id": "CUS-77382",
+    "name": "Sarah's Vintage Boutique",
+    "kyc_profile": {
+      "risk_rating": "LOW",
+      "business_purpose": "Retail Clothing Store",
+      "occupation": "Small Business Owner",
+      "expected_monthly_volume": 20000,
+      "notes": "Customer notified bank on 05-01-2024 of planned store expansion and inventory buyout."
+    }
+  },
+  "transactions": [
+    { "txn_id": "TXN-301", "date": "2024-05-14T10:00:00Z", "amount": 45000.00, "type": "WIRE_OUT", "beneficiary": { "name": "Wholesale Distributors Inc", "account": "WDI-9922" } },
+    { "txn_id": "TXN-302", "date": "2024-05-15T11:30:00Z", "amount": 25000.00, "type": "WIRE_OUT", "beneficiary": { "name": "Estate Liquidators LLC", "account": "ELL-3344" } }
+  ],
+  "triggering_rule": "MONTHLY_VOLUME_DEVIATION_>200%",
+  "status": "OPEN"
+}

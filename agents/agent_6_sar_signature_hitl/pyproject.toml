@@ -1,0 +1,11 @@
+[project]
+name = "agent_6_sar_signature_hitl"
+version = "0.0.1"
+description = "agent_6_sar_signature_hitl"
+authors = [{ name = "John Doe", email = "john.doe@myemail.com" }]
+dependencies = [
+    "langgraph>=1.2.6",
+    "uipath-core>=0.5.19",
+    "uipath-langchain[bedrock,vertex]>=0.10.0,<0.11.0",
+]
+requires-python = ">=3.11"

@@ -1,0 +1,11 @@
+langchain
+langchain-aws
+boto3
+langgraph
+pydantic
+python-dotenv
+requests
+flask
+streamlit
+fastapi
+uvicorn

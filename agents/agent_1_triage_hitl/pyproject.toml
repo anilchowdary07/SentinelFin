@@ -1,0 +1,12 @@
+[project]
+name = "agent_1_triage_hitl"
+version = "0.0.1"
+description = "agent_1_triage_hitl"
+authors = [{ name = "John Doe", email = "john.doe@myemail.com" }]
+dependencies = [
+    "langgraph>=1.2.6",
+    "uipath>=2.10.0, <2.11.0",
+    "uipath-core>=0.5.19",
+    "uipath-langchain>=0.12.2",
+]
+requires-python = ">=3.11"

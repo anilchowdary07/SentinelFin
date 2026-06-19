@@ -1,0 +1,52 @@
+{
+  "case_id": "CAS-2024-002",
+  "alert_type": "SUSPECTED_LAYERING",
+  "created_at": "2024-05-16T10:15:00Z",
+  "primary_subject": {
+    "account_id": "ACC-554433",
+    "customer_id": "CUS-48291",
+    "name": "Global Trade Logistics LLC",
+    "kyc_profile": {
+      "risk_rating": "HIGH",
+      "business_purpose": "Import/Export",
+      "country_of_incorporation": "USA",
+      "expected_monthly_volume": 150000
+    }
+  },
+  "transactions": [
+    { 
+      "txn_id": "TXN-201", 
+      "date": "2024-05-10T09:00:00Z", 
+      "amount": 250000.00, 
+      "type": "WIRE_IN", 
+      "originator": { "name": "Unknown Entity A", "country": "Cayman Islands", "account": "CY-999123" },
+      "beneficiary": { "account": "ACC-554433" }
+    },
+    { 
+      "txn_id": "TXN-202", 
+      "date": "2024-05-11T11:30:00Z", 
+      "amount": 120000.00, 
+      "type": "WIRE_OUT", 
+      "originator": { "account": "ACC-554433" },
+      "beneficiary": { "name": "Shell Corp B", "country": "Panama", "account": "PA-888456" }
+    },
+    { 
+      "txn_id": "TXN-203", 
+      "date": "2024-05-11T14:45:00Z", 
+      "amount": 125000.00, 
+      "type": "WIRE_OUT", 
+      "originator": { "account": "ACC-554433" },
+      "beneficiary": { "name": "Holdings C", "country": "Cyprus", "account": "CP-777789" }
+    },
+    { 
+      "txn_id": "TXN-204", 
+      "date": "2024-05-12T10:15:00Z", 
+      "amount": 115000.00, 
+      "type": "WIRE_OUT", 
+      "originator": { "name": "Shell Corp B", "account": "PA-888456" },
+      "beneficiary": { "name": "Final Destination D", "country": "Switzerland", "account": "CH-111222" }
+    }
+  ],
+  "triggering_rule": "RAPID_FUNDS_MOVEMENT_HIGH_RISK_JURISDICTION",
+  "status": "OPEN"
+}

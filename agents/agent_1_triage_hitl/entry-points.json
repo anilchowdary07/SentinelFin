@@ -1,0 +1,65 @@
+{
+    "$schema": "https://cloud.uipath.com/draft/2024-12/entry-point",
+    "$id": "entry-points.json",
+    "entryPoints": [
+        {
+            "filePath": "main",
+            "uniqueId": "b170bf3c-719e-4a5f-8bbf-22086aaba00d",
+            "type": "function",
+            "input": {
+                "type": "object",
+                "properties": {
+                    "case_id": {
+                        "description": "The unique case ID from Maestro.",
+                        "title": "Case Id",
+                        "type": "string"
+                    },
+                    "risk_score": {
+                        "description": "The calculated risk score.",
+                        "title": "Risk Score",
+                        "type": "integer"
+                    },
+                    "context_data": {
+                        "additionalProperties": true,
+                        "description": "The transactions and context.",
+                        "title": "Context Data",
+                        "type": "object"
+                    }
+                },
+                "required": [
+                    "case_id",
+                    "risk_score",
+                    "context_data"
+                ],
+                "title": "Input"
+            },
+            "output": {
+                "type": "object",
+                "properties": {
+                    "approval_status": {
+                        "description": "The status returned by the human reviewer.",
+                        "title": "Approval Status",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "approval_status"
+                ],
+                "title": "Output"
+            },
+            "graph": {
+                "nodes": [
+                    {
+                        "id": "main.py:55",
+                        "name": "main",
+                        "type": "function",
+                        "metadata": {
+                            "file": "main.py"
+                        }
+                    }
+                ],
+                "edges": []
+            }
+        }
+    ]
+}
