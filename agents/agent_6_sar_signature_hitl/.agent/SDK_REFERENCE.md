@@ -62,17 +62,11 @@ sdk.assets.retrieve(name: str, folder_key: Optional[str]=None, folder_path: Opti
 # Asynchronously retrieve an asset by its name.
 sdk.assets.retrieve_async(name: str, folder_key: Optional[str]=None, folder_path: Optional[str]=None) -> uipath.platform.orchestrator.assets.UserAsset | uipath.platform.orchestrator.assets.Asset
 
-# Get the decrypted password of a Credential asset.
+# Gets a specified Orchestrator credential.
 sdk.assets.retrieve_credential(name: str, folder_key: Optional[str]=None, folder_path: Optional[str]=None) -> typing.Optional[str]
 
-# Asynchronously get the decrypted password of a Credential asset.
+# Asynchronously gets a specified Orchestrator credential.
 sdk.assets.retrieve_credential_async(name: str, folder_key: Optional[str]=None, folder_path: Optional[str]=None) -> typing.Optional[str]
-
-# Get the decrypted value of a Secret asset.
-sdk.assets.retrieve_secret(name: str, folder_key: Optional[str]=None, folder_path: Optional[str]=None) -> typing.Optional[str]
-
-# Asynchronously get the decrypted value of a Secret asset.
-sdk.assets.retrieve_secret_async(name: str, folder_key: Optional[str]=None, folder_path: Optional[str]=None) -> typing.Optional[str]
 
 # Update an asset's value.
 sdk.assets.update(robot_asset: uipath.platform.orchestrator.assets.UserAsset, folder_key: Optional[str]=None, folder_path: Optional[str]=None) -> httpx.Response
@@ -757,7 +751,7 @@ Llm service
 
 ```python
 # Generate chat completions using UiPath's normalized LLM Gateway API.
-sdk.llm.chat_completions(messages: list[dict[str, str]] | list[tuple[str, str]], model: str="gpt-4.1-mini-2025-04-14", max_tokens: int=4096, temperature: float=0, n: int=1, frequency_penalty: float=0, presence_penalty: float=0, top_p: float | None=1, top_k: int | None=None, tools: list[uipath.platform.chat.llm_gateway.ToolDefinition | dict[str, Any]] | None=None, tool_choice: Union[uipath.platform.chat.llm_gateway.AutoToolChoice, uipath.platform.chat.llm_gateway.RequiredToolChoice, uipath.platform.chat.llm_gateway.SpecificToolChoice, Literal['auto', 'none'], NoneType]=None, response_format: dict[str, Any] | type[pydantic.main.BaseModel] | None=None, api_version: str="2024-08-01-preview")
+sdk.llm.chat_completions(messages: list[dict[str, str]] | list[tuple[str, str]], model: str="gpt-4.1-mini-2025-04-14", max_tokens: int=4096, temperature: float=0, n: int=1, frequency_penalty: float=0, presence_penalty: float=0, top_p: float | None=1, top_k: int | None=None, tools: list[uipath.platform.chat.llm_gateway.ToolDefinition] | None=None, tool_choice: Union[uipath.platform.chat.llm_gateway.AutoToolChoice, uipath.platform.chat.llm_gateway.RequiredToolChoice, uipath.platform.chat.llm_gateway.SpecificToolChoice, Literal['auto', 'none'], NoneType]=None, response_format: dict[str, Any] | type[pydantic.main.BaseModel] | None=None, api_version: str="2024-08-01-preview")
 
 ```
 
@@ -840,19 +834,6 @@ sdk.orchestrator_setup.enable_first_run() -> None
 
 # Fire-and-forget POST requests to enable first run for StudioWeb.
 sdk.orchestrator_setup.enable_first_run_async() -> None
-
-```
-
-### Pii Detection
-
-Pii Detection service
-
-```python
-# Detect PII in the provided documents and/or files.
-sdk.pii_detection.detect_pii(request: uipath.platform.pii_detection.pii_detection.PiiDetectionRequest) -> uipath.platform.pii_detection.pii_detection.PiiDetectionResponse
-
-# Detect PII in the provided documents and/or files (async).
-sdk.pii_detection.detect_pii_async(request: uipath.platform.pii_detection.pii_detection.PiiDetectionRequest) -> uipath.platform.pii_detection.pii_detection.PiiDetectionResponse
 
 ```
 
@@ -979,12 +960,6 @@ sdk.tasks.create(title: str, data: Optional[Dict[str, Any]]=None, app_name: Opti
 
 # Creates a new action asynchronously.
 sdk.tasks.create_async(title: str, data: Optional[Dict[str, Any]]=None, app_name: Optional[str]=None, app_key: Optional[str]=None, app_folder_path: Optional[str]=None, app_folder_key: Optional[str]=None, assignee: Optional[str]=None, recipient: Optional[uipath.platform.action_center.tasks.TaskRecipient]=None, priority: Optional[str]=None, labels: Optional[List[str]]=None, is_actionable_message_enabled: Optional[bool]=None, actionable_message_metadata: Optional[Dict[str, Any]]=None, source_name: str="Agent") -> uipath.platform.action_center.tasks.Task
-
-# Create a new QuickForm task synchronously.
-sdk.tasks.create_quickform(title: str, task_schema_key: str, schema: Dict[str, Any], data: Optional[Dict[str, Any]]=None, folder_path: Optional[str]=None, folder_key: Optional[str]=None, assignee: Optional[str]=None, recipient: Optional[uipath.platform.action_center.tasks.TaskRecipient]=None, priority: Optional[str]=None, labels: Optional[List[str]]=None, is_actionable_message_enabled: Optional[bool]=None, actionable_message_metadata: Optional[Dict[str, Any]]=None, creator_job_key: Optional[str]=None, source_name: str="Agent") -> uipath.platform.action_center.tasks.Task
-
-# Creates a new QuickForm task asynchronously.
-sdk.tasks.create_quickform_async(title: str, task_schema_key: str, schema: Dict[str, Any], data: Optional[Dict[str, Any]]=None, folder_path: Optional[str]=None, folder_key: Optional[str]=None, assignee: Optional[str]=None, recipient: Optional[uipath.platform.action_center.tasks.TaskRecipient]=None, priority: Optional[str]=None, labels: Optional[List[str]]=None, is_actionable_message_enabled: Optional[bool]=None, actionable_message_metadata: Optional[Dict[str, Any]]=None, creator_job_key: Optional[str]=None, source_name: str="Agent") -> uipath.platform.action_center.tasks.Task
 
 # Retrieves a task by its key synchronously.
 sdk.tasks.retrieve(action_key: str, app_folder_path: Optional[str]=None, app_folder_key: Optional[str]=None, app_name: str | None=None) -> uipath.platform.action_center.tasks.Task

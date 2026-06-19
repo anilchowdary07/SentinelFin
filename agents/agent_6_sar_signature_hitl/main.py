@@ -43,7 +43,7 @@ workflow = StateGraph(SARState)
 workflow.add_node("gate2", gate2_signature_node)
 workflow.add_edge(START, "gate2")
 workflow.add_edge("gate2", END)
-compiled_graph = workflow.compile()
+graph = workflow.compile()
 
 def main(input_data: Input) -> Output:
     initial_state = {
@@ -52,5 +52,5 @@ def main(input_data: Input) -> Output:
         "bsa_signature": None
     }
     
-    final_state = compiled_graph.invoke(initial_state)
+    final_state = graph.invoke(initial_state)
     return Output(bsa_signature=final_state.get("bsa_signature"))

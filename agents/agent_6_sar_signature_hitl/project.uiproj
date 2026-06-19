@@ -1,5 +1,5 @@
 {
-  "ProjectType": "Function",
+  "ProjectType": "Agent",
   "Name": "agent_6_sar_signature_hitl",
   "Description": "agent_6_sar_signature_hitl",
   "MainFile": null
