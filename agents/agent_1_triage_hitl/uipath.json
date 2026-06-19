@@ -1,6 +1,6 @@
 {
   "functions": {
-    "main": "main.py:main"
+    "compiled_graph": "main.py:compiled_graph"
   },
   "id": "dc030ac9-5926-49f9-9f96-bd93277e44be"
 }

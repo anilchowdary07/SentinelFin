@@ -1,0 +1,15 @@
+[project]
+name = "agent_2_investigation_api"
+version = "0.0.1"
+authors = [{ name = "SentinelFin Team" }]
+description = "Calls the local FastAPI investigation endpoint"
+requires-python = ">=3.11"
+dependencies = [
+    "requests",
+    "langgraph",
+    "typing_extensions"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

@@ -12,7 +12,7 @@
     "includeUvLock": true
   },
   "functions": {
-    "main": "main.py:main"
+    "graph": "main.py:graph"
   },
   "agents": {}
 }

@@ -1,6 +1,6 @@
 [project]
-name = "agent_1_triage_hitl"
-version = "0.0.1"
+name = "agent_1_triage"
+version = "0.0.2"
 description = "agent_1_triage_hitl"
 authors = [{ name = "John Doe", email = "john.doe@myemail.com" }]
 dependencies = [

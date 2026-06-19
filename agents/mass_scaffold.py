@@ -47,7 +47,11 @@ dependencies = [
 requires-python = ">=3.11"
 """
 
-MAIN_PY = """from pydantic import BaseModel
+MAIN_PY = """import os
+from dotenv import load_dotenv
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env'))
+
+from pydantic import BaseModel
 from typing import Dict, Any
 
 class Input(BaseModel):

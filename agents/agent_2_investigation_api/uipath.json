@@ -1,0 +1,8 @@
+{
+  "project_id": "agent_2_investigation_api",
+  "project_name": "agent_2_investigation_api",
+  "project_type": "Agent",
+  "agents": {
+    "agent_2_investigation_api": "main.py:main"
+  }
+}

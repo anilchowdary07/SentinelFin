@@ -1,0 +1,6 @@
+{
+  "ProjectType": "Agent",
+  "Name": "agent_2_investigation_api",
+  "Description": "Calls the local FastAPI investigation endpoint",
+  "MainFile": null
+}

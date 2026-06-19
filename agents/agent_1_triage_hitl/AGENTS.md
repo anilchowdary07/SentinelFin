@@ -1,6 +1,6 @@
 # Agent Code Patterns Reference
 
-This document provides practical code patterns for building UiPath coded agents using the UiPath Python SDK.
+This document provides practical code patterns for building UiPath coded agents using LangGraph and the UiPath Python SDK.
 
 ---
 
@@ -10,7 +10,7 @@ This documentation is split into multiple files for efficient context loading. L
 
 1. **@.agent/REQUIRED_STRUCTURE.md** - Agent structure patterns and templates
    - **When to load:** Creating a new agent or understanding required patterns
-   - **Contains:** Required Pydantic models (Input, Output), SDK initialization patterns, standard agent template
+   - **Contains:** Required Pydantic models (Input, State, Output), LLM initialization patterns, standard agent template
 
 2. **@.agent/SDK_REFERENCE.md** - Complete SDK API reference
    - **When to load:** Calling UiPath SDK methods, working with services (actions, assets, jobs, etc.)

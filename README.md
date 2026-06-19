@@ -1,107 +1,211 @@
-# SentinelFin: Agentic AML Compliance Backend
+# SentinelFin 🛡️ — Agentic AML Compliance on UiPath
 
-SentinelFin is a highly advanced Python microservice built for the UiPath AgentHack. It utilizes **Meta Llama 3.1 70B** (via AWS Bedrock) to dynamically write, execute, and evaluate Python logic on the fly to detect complex Anti-Money Laundering (AML) schemes, and automatically drafts FinCEN-compliant Suspicious Activity Reports (SARs).
-
-This repository contains the intelligent backend designed to be directly orchestrated by **UiPath Maestro** via RESTful API calls.
-
-## 💼 The Business Case
-
-In 2024 alone, regulators levied over **$4.6 Billion** in AML fines globally. A core challenge for financial institutions is the strict legal mandate to file a Suspicious Activity Report (SAR) within **30 days** of detection. 
-
-Currently, human analysts spend 4-12 hours manually gathering context and drafting narratives for a single case. **SentinelFin automates the investigative heavy-lifting**, turning a 6-hour process into a 10-second API call, ensuring deterministic, audit-traced decision making. Crucially, the UiPath Maestro orchestration guarantees humans remain exclusively in control at legally-required approval gates.
+> **UiPath AgentHack 2026 — Track 1: UiPath Maestro Case**
+> Built with Gemini CLI + LangGraph + AWS Bedrock (Llama 3.1 70B) + UiPath Coded Agents
 
 ---
 
-## 🏗 The Solution (What's Actually in this Repo)
+## 🎯 The Business Problem
 
-To solve the "Black Box AI" problem in banking compliance, we built a **Dynamic Code Generation Engine** (Agent 3) and a **Regulatory Narrative Generator** (Agent 6). 
+In 2024, global regulators levied **over $4.6 billion in AML fines**. Every financial institution faces a hard legal mandate: file a Suspicious Activity Report (SAR) within **30 days** of detecting suspicious activity.
 
-We explicitly avoided building a massive, simulated "8-agent" chatbot system. Instead, we built **One Real Slice** of enterprise intelligence, exposed as a FastAPI service so it can be natively invoked by UiPath Studio and orchestrated by UiPath Maestro.
+The problem: human analysts spend **4–12 hours manually** gathering context, running transaction analysis, and drafting a single SAR narrative. This creates bottlenecks, inconsistency, and legal exposure.
 
-### The 2 Core Agents
-1. **Agent 3 (Pattern Detection):** When an alert fires, this agent takes the JSON transaction graph, asks Meta Llama 3.1 70B to dynamically generate custom Python code to detect layering/structuring, executes that code securely on the server, and returns a deterministic Risk Score (0-100).
-2. **Agent 6 (SAR Narrative):** Takes the mathematical output of Agent 3 and uses the LLM to synthesize a highly structured, FinCEN-compliant legal narrative (Who, What, When, Where, Why, How).
+**SentinelFin automates the entire AML investigation pipeline** — from alert triage to SAR filing — using 8 coordinated AI agents orchestrated by UiPath Maestro. Crucially, humans remain **exclusively in control** at two legally-required approval gates.
 
-### The UiPath Orchestration Architecture
-> **Architectural Alignment:** Our Maestro orchestration is deliberately modeled after UiPath’s canonical best practices. As cited in UiPath's own May 2026 Maestro Case documentation: *"Financial crime investigations are hybrid. AML investigation runs as a case. Once the suspicious activity report (SAR) decision is made, SAR filing is a BPMN flow with deterministic controls."* SentinelFin strictly adheres to this: Stages 1–3 run as an open-ended Maestro Case with human-in-the-loop exception handling, and Stage 4 (FinCEN Filing) executes as a separate, deterministic BPMN flow.
+---
 
-The agents are exposed as **UiPath Coded Agents** natively running in Orchestrator.
+## 🏗️ Architecture
 
-```mermaid
-graph TD
-    %% Define Styles
-    classDef uipath fill:#ff5a00,stroke:#333,stroke-width:2px,color:white,font-weight:bold;
-    classDef python fill:#3776ab,stroke:#333,stroke-width:2px,color:white;
-    classDef human fill:#28a745,stroke:#333,stroke-width:2px,color:white;
-
-    %% UiPath Maestro Flow
-    M[UiPath Maestro Orchestrator]:::uipath --> G1[Gate 1: Triage Alert]:::human
-    G1 -->|Approve| HTTP[UiPath HTTP Request Activity]:::uipath
-    
-    %% Python Microservice
-    subgraph FastAPI SentinelFin Microservice
-        HTTP --> A1[Agent 1: Context Enrichment]:::python
-        A1 --> A2[Agent 2: Sanctions Screener]:::python
-        A2 --> A3[Agent 3: Pattern Detection & Code Gen]:::python
-        A2 --> A4[Agent 4: Network Graph Traversal]:::python
-        A3 --> ARB[Synthesis & Arbitration Step]:::python
-        A4 --> ARB
-        ARB --> A5[Agent 5: Regulatory SLAs]:::python
-        A5 --> A6[Agent 6: SAR Narrative Generation]:::python
-        A6 --> A7[Agent 7: FinCEN Form Population]:::python
-    end
-
-    %% Back to UiPath
-    A7 -->|JSON Response| M2[Update Maestro Case Variables]:::uipath
-    M2 --> G2[Gate 2: BSA Officer Review]:::human
-    
-    %% Final Submission
-    G2 -->|Digital Signature| RPA[UiPath RPA Form Filler]:::uipath
-    RPA --> A8[Agent 8: Submission Audit / Webhook]:::python
+```
+AML Alert Fires
+     │
+     ▼
+[UiPath Maestro Case Created]
+     │
+     ▼
+Gate 1: AML Analyst Triage ──── [LangGraph Agent] ──── Suspend ──── Human Approves
+     │                                                               via Orchestrator
+     ▼
+Stage 2: Investigation Pipeline [FastAPI + Llama 3.1 70B via AWS Bedrock]
+     │
+     ├── Agent 1: Context Enrichment (KYC + 90-day history)
+     ├── Agent 2: Sanctions Screening (OFAC/PEP check)
+     ├── Agent 3: ⭐ Dynamic Code Generation (LLM writes + executes custom detector)
+     ├── Agent 4: Network Graph Traversal (multi-hop layering detection)
+     ├── [Arbitration] Synthesis conflict resolution between Agent 3 & 4
+     ├── Agent 5: Regulatory Intelligence (applicable CFR rules + SLA status)
+     ├── Agent 6: SAR Narrative Writer (FinCEN-compliant Who/What/When/Where/Why/How)
+     └── Agent 7: FinCEN Form 111 Population
+     │
+     ▼
+[Maestro Case Variables Updated with risk_score, sar_narrative, fincen_payload]
+     │
+     ▼
+Gate 2: BSA Officer Review ──── [LangGraph Agent] ──── Suspend ──── BSA Signs
+     │                                                               via Orchestrator
+     ▼
+Stage 4: FinCEN Submission + Audit Trail
+     │
+     └── Agent 8: Submission Audit (immutable SHA-256 audit hash + timestamp)
 ```
 
-1. **UiPath Maestro** receives a case.
-2. Maestro triggers an **Action Center Task** (Gate 1: Triage).
-3. Maestro uses an **HTTP Request** to hit our `POST /api/investigate` endpoint.
-4. SentinelFin runs Agent 3 and Agent 6, returning the Risk Score and SAR Narrative.
-5. Maestro suspends the workflow for **Gate 2: BSA Officer Review**.
-6. Upon approval, UiPath RPA handles the physical filing.
+---
+
+## 🤖 The 8 Agents — What's Real
+
+| # | Agent | Type | What It Actually Does |
+|---|---|---|---|
+| 1 | `agent_1_triage` | **UiPath Coded Agent** (LangGraph) | Gate 1 human-in-the-loop — suspends Maestro for analyst approval |
+| 2 | `agent_1_transaction_context` | Python microservice | KYC enrichment + 90-day historical volume |
+| 3 | `agent_2_sanctions_screener` | Python microservice | OFAC/PEP check with configurable failure mode for resilience demo |
+| 4 | `agent_3_pattern_detection` | **⭐ SHOWCASE** Python microservice | Asks Llama 3.1 to write + execute a custom detection function in real-time |
+| 5 | `agent_4_network_investigation` | Python microservice | Multi-hop graph traversal for layering detection |
+| 6 | `agent_5_regulatory_intelligence` | Python microservice | Maps findings to applicable CFR rules + SLA status |
+| 7 | `agent_6_sar_narrative_writer` | Python microservice | Llama 3.1 generates a FinCEN-compliant SAR narrative |
+| 8 | `agent_6_sar_signature_hitl` | **UiPath Coded Agent** (LangGraph) | Gate 2 human-in-the-loop — suspends Maestro for BSA Officer approval |
+
+> **BONUS:** This entire project was built using **Gemini CLI** as the coding agent, running on the UiPath for Coding Agents capability. Every agent, every deployment command, every configuration was generated and deployed through natural language prompts.
 
 ---
 
-## 🚀 Setup & Execution
+## 🌟 What Makes Agent 3 Special
+
+Agent 3 is the technical centrepiece. Instead of hard-coding detection rules, it:
+
+1. Receives the alert type (`SUSPECTED_LAYERING`, `STRUCTURING`, etc.) and raw transactions
+2. Asks **Llama 3.1 70B** to write a custom Python detection function tailored to that specific pattern
+3. Executes the generated code in a sandboxed namespace
+4. If execution fails, triggers **self-reflection**: sends the error back to the LLM with a request to fix it
+5. If both retries fail, gracefully falls back to a static rule-based detector (no crash, no data loss)
+
+This is true **agentic behavior**: dynamic reasoning → code generation → execution → self-correction → fallback.
+
+---
+
+## 🔗 UiPath Platform Components Used
+
+| Component | How Used |
+|---|---|
+| **UiPath Maestro Case** | Main orchestration — stages, global variables, case lifecycle |
+| **UiPath Coded Agents (LangGraph)** | Gate 1 (triage HITL) and Gate 2 (BSA signature HITL) |
+| **UiPath Orchestrator** | Hosts all 8 Coded Agent processes, manages job suspension/resume |
+| **UiPath for Coding Agents** | Gemini CLI used to build, deploy, and debug all agents via natural language |
+| **LangGraph `interrupt()`** | API Trigger HITL pattern — suspends Orchestrator job for human decision |
+
+---
+
+## 🚀 Setup & Running Locally
 
 ### Prerequisites
-1. Python 3.10+
-2. AWS Bedrock Key (Meta Llama 3.1 70B enabled)
-3. UiPath Studio (for workflow integration)
+- Python 3.11+
+- AWS account with Bedrock enabled (Llama 3.1 70B) — OR use fallback mode (no key needed)
+- UiPath Automation Cloud account
 
-### Running the API Service
-To start the FastAPI backend:
+### 1. Clone and install
 ```bash
+git clone https://github.com/anilchowdary07/SentinelFin.git
+cd ui_path_agent_hackathon
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
-export AWS_BEDROCK_KEY="your-api-key"
-
-# Start the uvicorn server
-uvicorn main:app --reload
 ```
-The API will be available at `http://localhost:8000/api/investigate`.
 
-### The Developer UI Console (Streamlit)
-To visualize the agents working without hooking up UiPath, we included a Streamlit console.
+### 2. Configure environment
 ```bash
-streamlit run app.py
+cp .env.example .env
+# Edit .env and add your AWS_BEDROCK_KEY (optional — fallback mode works without it)
 ```
-*Note: This dashboard is a developer testing tool. In production, UiPath Action Center replaces this UI.*
+
+### 3. Start the investigation API
+```bash
+source venv/bin/activate
+uvicorn main:app --reload --port 8000
+```
+API docs auto-generated at `http://localhost:8000/docs`
+
+### 4. Test with a scenario
+```bash
+curl -X POST http://localhost:8000/api/investigate \
+  -H "Content-Type: application/json" \
+  -d @mock_data/scenario_layering.json
+```
+
+### 5. Expose for Maestro (Orchestrator HTTP Request)
+```bash
+# Install ngrok (https://ngrok.com)
+ngrok http 8000
+# Copy the https:// URL and use it in your Maestro HTTP Request task
+```
 
 ---
 
-## 🔌 UiPath Integration Guide
-To wire this AI backend into UiPath:
-1. Open UiPath Studio.
-2. Drag an **HTTP Request** activity into your sequence.
-3. Set the Endpoint to `http://localhost:8000/api/investigate`.
-4. Set the Body to a JSON transaction payload (see `mock_data/scenario_layering.json`).
-5. Deserialize the JSON response and map `risk_score` and `sar_narrative` into your Maestro Case variables.
+## 📂 Repository Structure
 
-See `UIPATH_INTEGRATION_GUIDE.md` for detailed instructions.
+```
+├── main.py                          # FastAPI app — all 8 agents as one pipeline
+├── requirements.txt
+├── .env.example
+├── mock_data/
+│   ├── scenario_layering.json       # Multi-hop wire layering via Cayman → Panama → Cyprus
+│   ├── scenario_structuring.json    # Classic sub-$10k structuring pattern
+│   └── scenario_false_positive.json # Legitimate business transactions (control case)
+├── agents/
+│   ├── agent_1_transaction_context/ # KYC enrichment
+│   ├── agent_2_sanctions_screener/  # OFAC/PEP screening
+│   ├── agent_3_pattern_detection/   # ⭐ LLM code generation showcase agent
+│   ├── agent_4_network_investigation/
+│   ├── agent_5_regulatory_intelligence/
+│   ├── agent_6_sar_narrative_writer/
+│   ├── agent_7_sar_form_population/
+│   ├── agent_8_submission_audit/
+│   ├── agent_1_triage_hitl/         # UiPath Coded Agent — Gate 1 HITL (LangGraph)
+│   └── agent_6_sar_signature_hitl/  # UiPath Coded Agent — Gate 2 HITL (LangGraph)
+├── integrations/
+│   └── bedrock_helper.py            # AWS Bedrock / Llama 3.1 70B client
+└── maestro/                         # Maestro configuration docs
+```
+
+---
+
+## 🎬 Demo Scenarios
+
+### Scenario 1: Multi-Hop Layering (Primary Demo)
+`POST /api/investigate` with `mock_data/scenario_layering.json`
+
+Global Trade Logistics LLC receives $250K wire from Cayman Islands, immediately fans out to Panama and Cyprus shells, then funds cascade to Switzerland. Agent 3 (LLM) detects the rapid movement pattern. Agent 4 (graph) finds the 3-hop network. Arbitration escalates to max risk score.
+
+### Scenario 2: Structuring
+`POST /api/investigate` with `mock_data/scenario_structuring.json`
+
+Classic smurfing pattern: 5 deposits just under $10,000 across 3 days. Agent 3 writes a structured detector and flags it at 85+ risk score.
+
+### Scenario 3: False Positive (Control)
+`POST /api/investigate` with `mock_data/scenario_false_positive.json`
+
+Legitimate payroll + vendor payments. System correctly returns a low risk score and no SAR is filed, demonstrating the system avoids over-reporting.
+
+---
+
+## 🔐 Error Handling & Resilience
+
+- **Agent 3 self-reflection**: LLM-generated code fails → error sent back to LLM → auto-fix attempted → static fallback if needed
+- **Agent 2 controlled failure**: `force_api_failure: true` in the request payload triggers the sanctions screener to fail gracefully, demonstrating exception routing in the pipeline
+- **Gate HITL suspend/resume**: Uses LangGraph `interrupt()` — if a gate is abandoned, the Orchestrator job stays suspended without data loss
+
+---
+
+## 📋 License
+
+MIT License — see [LICENSE](LICENSE)
+
+---
+
+## 🏷️ UiPath Components Checklist
+
+- [x] UiPath Maestro Case (Track 1)
+- [x] UiPath Coded Agents (LangGraph — deployed to Orchestrator)
+- [x] UiPath Orchestrator (job management, HITL suspension)
+- [x] UiPath for Coding Agents (Gemini CLI — bonus points)
+- [x] External LLM framework (LangChain + LangGraph)
+- [x] External model provider (AWS Bedrock — Meta Llama 3.1 70B)

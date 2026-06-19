@@ -3,9 +3,9 @@
     "$id": "entry-points.json",
     "entryPoints": [
         {
-            "filePath": "main",
-            "uniqueId": "b170bf3c-719e-4a5f-8bbf-22086aaba00d",
-            "type": "function",
+            "filePath": "agent",
+            "uniqueId": "458f06d3-9709-4a94-a776-85c8edcd30c4",
+            "type": "agent",
             "input": {
                 "type": "object",
                 "properties": {
@@ -15,13 +15,13 @@
                         "type": "string"
                     },
                     "risk_score": {
-                        "description": "The calculated risk score.",
+                        "description": "The calculated risk score (0-100).",
                         "title": "Risk Score",
                         "type": "integer"
                     },
                     "context_data": {
                         "additionalProperties": true,
-                        "description": "The transactions and context.",
+                        "description": "The transaction context and entity data.",
                         "title": "Context Data",
                         "type": "object"
                     }
@@ -30,35 +30,57 @@
                     "case_id",
                     "risk_score",
                     "context_data"
-                ],
-                "title": "Input"
+                ]
             },
             "output": {
                 "type": "object",
                 "properties": {
                     "approval_status": {
-                        "description": "The status returned by the human reviewer.",
+                        "description": "The decision from the human reviewer: 'approved', 'rejected', or 'escalated'.",
                         "title": "Approval Status",
                         "type": "string"
                     }
                 },
                 "required": [
                     "approval_status"
-                ],
-                "title": "Output"
+                ]
             },
             "graph": {
                 "nodes": [
                     {
-                        "id": "main.py:55",
-                        "name": "main",
-                        "type": "function",
-                        "metadata": {
-                            "file": "main.py"
-                        }
+                        "id": "__start__",
+                        "name": "__start__",
+                        "type": "__start__",
+                        "subgraph": null,
+                        "metadata": {}
+                    },
+                    {
+                        "id": "triage",
+                        "name": "triage",
+                        "type": "node",
+                        "subgraph": null,
+                        "metadata": {}
+                    },
+                    {
+                        "id": "__end__",
+                        "name": "__end__",
+                        "type": "__end__",
+                        "subgraph": null,
+                        "metadata": {}
                     }
                 ],
-                "edges": []
+                "edges": [
+                    {
+                        "source": "__start__",
+                        "target": "triage",
+                        "label": null
+                    },
+                    {
+                        "source": "triage",
+                        "target": "__end__",
+                        "label": null
+                    }
+                ]
             }
         }
     ]

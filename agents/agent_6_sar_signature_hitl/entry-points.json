@@ -4,47 +4,41 @@
     "entryPoints": [
         {
             "filePath": "agent",
-            "uniqueId": "ef223127-9cec-4eda-95e4-2c089c7b628b",
+            "uniqueId": "ac3d0c42-813c-404a-bf81-b268ed605d34",
             "type": "agent",
             "input": {
                 "type": "object",
                 "properties": {
                     "case_id": {
+                        "description": "The unique case ID from Maestro.",
                         "title": "Case Id",
                         "type": "string"
                     },
                     "sar_narrative": {
+                        "description": "The drafted SAR narrative to review.",
                         "title": "Sar Narrative",
-                        "type": "string"
-                    },
-                    "bsa_signature": {
                         "type": "string"
                     }
                 },
                 "required": [
                     "case_id",
-                    "sar_narrative",
-                    "bsa_signature"
+                    "sar_narrative"
                 ]
             },
             "output": {
                 "type": "object",
                 "properties": {
-                    "case_id": {
-                        "title": "Case Id",
-                        "type": "string"
-                    },
-                    "sar_narrative": {
-                        "title": "Sar Narrative",
-                        "type": "string"
+                    "bsa_approved": {
+                        "description": "Whether the BSA Officer approved the SAR.",
+                        "title": "Bsa Approved",
+                        "type": "boolean"
                     },
                     "bsa_signature": {
                         "type": "string"
                     }
                 },
                 "required": [
-                    "case_id",
-                    "sar_narrative",
+                    "bsa_approved",
                     "bsa_signature"
                 ]
             },

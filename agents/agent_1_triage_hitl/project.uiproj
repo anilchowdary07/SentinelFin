@@ -1,6 +1,6 @@
 {
-  "ProjectType": "Function",
-  "Name": "agent_1_triage_hitl",
+  "ProjectType": "Agent",
+  "Name": "agent_1_triage",
   "Description": "agent_1_triage_hitl",
   "MainFile": null
 }

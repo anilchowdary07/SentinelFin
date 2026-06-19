@@ -1,6 +1,6 @@
 [project]
 name = "agent_6_sar_signature_hitl"
-version = "0.0.1"
+version = "0.0.6"
 description = "agent_6_sar_signature_hitl"
 authors = [{ name = "John Doe", email = "john.doe@myemail.com" }]
 dependencies = [

@@ -1,56 +1,71 @@
-from typing import Annotated, TypedDict
+from typing import TypedDict
 from langgraph.graph import StateGraph, START, END
 from langgraph.types import Command, interrupt
-from uipath.platform.common import CreateTask
 from pydantic import BaseModel, Field
 import datetime
+
 
 class SARState(TypedDict):
     case_id: str
     sar_narrative: str
+    bsa_approved: bool
     bsa_signature: str | None
+
 
 class Input(BaseModel):
     case_id: str = Field(description="The unique case ID from Maestro.")
-    sar_narrative: str = Field(description="The drafted SAR narrative from Agent 6.")
+    sar_narrative: str = Field(description="The drafted SAR narrative to review.")
+
 
 class Output(BaseModel):
-    bsa_signature: str | None = Field(description="The captured BSA Officer's digital signature.")
+    bsa_approved: bool = Field(description="Whether the BSA Officer approved the SAR.")
+    bsa_signature: str | None = Field(description="The BSA Officer's digital signature string.")
+
 
 def gate2_signature_node(state: SARState) -> Command:
-    # We raise an interrupt to send a task to Action Center in Orchestrator
-    # The BSA Officer must review the SAR narrative and provide a signature.
-    task_output = interrupt(CreateTask(
-        app_name="BSASignatureGate",
-        app_folder_path="Shared",
-        title=f"Gate 2 BSA Review: Final Approval for SAR {state['case_id']}",
-        data={
-            "case_id": state["case_id"],
-            "sar_narrative": state["sar_narrative"],
-            "timestamp": str(datetime.datetime.now())
-        },
-        assignee="bsa_officer@example.com"
-    ))
+    """
+    Gate 2: BSA Officer Review.
     
-    # We extract the signature from the task output that the human provided
-    signature = task_output.get("bsa_signature", None)
+    Uses LangGraph interrupt() to pause execution and hand control back to 
+    UiPath Orchestrator. The job enters 'Suspended' state with the full SAR
+    context visible in the Orchestrator UI. A human resumes the job via the
+    Orchestrator resume API or the UI, providing approval + signature.
     
-    return Command(update={
-        "bsa_signature": signature
+    This is the API Trigger HITL pattern — no external Action Center App 
+    required. Any system (human via Orchestrator UI, downstream RPA, webhook) 
+    can resume the job.
+    """
+    resume_payload = interrupt({
+        "gate": "Gate 2 — BSA Officer SAR Review",
+        "case_id": state["case_id"],
+        "sar_narrative": state["sar_narrative"],
+        "timestamp_utc": str(datetime.datetime.utcnow().isoformat()),
+        "instructions": (
+            "Review the SAR narrative above. "
+            "Resume this job with {'approved': true, 'signature': 'Your Name — BSA Officer'} "
+            "to approve, or {'approved': false, 'signature': ''} to reject."
+        )
     })
 
-workflow = StateGraph(SARState)
+    import json
+    if isinstance(resume_payload, str):
+        try:
+            resume_payload = json.loads(resume_payload)
+        except Exception:
+            resume_payload = {"approved": True, "signature": resume_payload}
+            
+    if isinstance(resume_payload, dict):
+        approved = bool(resume_payload.get("approved", False))
+        signature = resume_payload.get("signature", None)
+    else:
+        approved = True
+        signature = "System Approved"
+
+    return {"bsa_approved": approved, "bsa_signature": signature}
+
+
+workflow = StateGraph(SARState, input_schema=Input, output_schema=Output)
 workflow.add_node("gate2", gate2_signature_node)
 workflow.add_edge(START, "gate2")
 workflow.add_edge("gate2", END)
 graph = workflow.compile()
-
-def main(input_data: Input) -> Output:
-    initial_state = {
-        "case_id": input_data.case_id,
-        "sar_narrative": input_data.sar_narrative,
-        "bsa_signature": None
-    }
-    
-    final_state = graph.invoke(initial_state)
-    return Output(bsa_signature=final_state.get("bsa_signature"))
