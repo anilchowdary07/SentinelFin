@@ -4,7 +4,9 @@ import os
 import sys
 import time
 
-os.environ["AWS_BEDROCK_KEY"] = os.getenv("AWS_BEDROCK_KEY", "YOUR_AWS_BEDROCK_KEY_HERE")
+from dotenv import load_dotenv
+load_dotenv()
+
 
 sys.path.append(os.path.dirname(__file__))
 
