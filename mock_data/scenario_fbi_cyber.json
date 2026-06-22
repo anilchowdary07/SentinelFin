@@ -1,0 +1,51 @@
+{
+  "case_id": "CAS-FBI-001",
+  "alert_type": "CYBER_EXTORTION_LAUNDERING",
+  "created_at": "2026-06-21T10:00:00Z",
+  "primary_subject": {
+    "account_id": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+    "customer_id": "EXT-99921",
+    "name": "BOGACHEV",
+    "kyc_profile": {
+      "risk_rating": "CRITICAL",
+      "business_purpose": "Unknown/Dark Web",
+      "occupation": "Unknown",
+      "expected_monthly_volume": 0,
+      "notes": "Triggered by external Threat Intel feed linking address to Ransomware syndicate."
+    }
+  },
+  "transactions": [
+    {
+      "txn_id": "TXN-501",
+      "date": "2026-06-20T08:00:00Z",
+      "amount": 3000000.00,
+      "type": "CRYPTO_IN",
+      "originator": {
+        "name": "Ransomware Victim",
+        "country": "USA",
+        "account": "US-BANK-111"
+      },
+      "beneficiary": {
+        "name": "BOGACHEV",
+        "country": "Russia",
+        "account": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+      }
+    },
+    {
+      "txn_id": "TXN-502",
+      "date": "2026-06-21T09:00:00Z",
+      "amount": 2900000.00,
+      "type": "CRYPTO_OUT",
+      "originator": {
+        "name": "BOGACHEV",
+        "account": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+      },
+      "beneficiary": {
+        "name": "Slavic Holdings LLC",
+        "country": "Cyprus",
+        "account": "CY-999-BOGA"
+      }
+    }
+  ],
+  "triggering_rule": "KNOWN_THREAT_ACTOR_WALLET_DEPOSIT"
+}

@@ -288,6 +288,22 @@ const SCENARIOS = {
         beneficiary:{name:'PJSC Gazprombank', country:'Russia', account:'RU-GAZP-999'} },
     ],
   },
+  cyber: {
+    label: '🚨 REAL WORLD: FBI Cyber',
+    badge: 'CYBER_RANSOMWARE',
+    color: '#FF4D4D',
+    description: 'Real-world data: Zeus Trojan ransomware laundering',
+    case_id: 'CAS-FBI-001',
+    alert_type: 'CYBER_EXTORTION_LAUNDERING',
+    transactions: [
+      { txn_id:'TXN-501', date:'2026-06-20T08:00:00Z', amount:3000000, type:'CRYPTO_IN',
+        originator:{name:'Ransomware Victim', country:'USA', account:'US-BANK-111'},
+        beneficiary:{name:'BOGACHEV', country:'Russia', account:'1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa'} },
+      { txn_id:'TXN-502', date:'2026-06-21T09:00:00Z', amount:2900000, type:'CRYPTO_OUT',
+        originator:{name:'BOGACHEV', account:'1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa'},
+        beneficiary:{name:'Slavic Holdings LLC', country:'Cyprus', account:'CY-999-BOGA'} },
+    ],
+  },
 };
 
 const AGENTS = [
