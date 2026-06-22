@@ -14,5 +14,6 @@
   "functions": {
     "main": "main.py:main"
   },
-  "agents": {}
+  "agents": {},
+  "projectVersion": "0.0.2"
 }

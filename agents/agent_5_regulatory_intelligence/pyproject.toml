@@ -1,6 +1,6 @@
 [project]
 name = "agent_5_regulatory_intelligence"
-version = "0.0.1"
+version = "0.0.4"
 description = "agent_5_regulatory_intelligence"
 authors = [{ name = "SentinelFin", email = "sentinelfin@example.com" }]
 dependencies = [

@@ -1,6 +1,6 @@
 [project]
 name = "agent_7_sar_form_population"
-version = "0.0.1"
+version = "0.0.4"
 description = "agent_7_sar_form_population"
 authors = [{ name = "SentinelFin", email = "sentinelfin@example.com" }]
 dependencies = [

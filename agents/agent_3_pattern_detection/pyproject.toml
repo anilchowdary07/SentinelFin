@@ -1,6 +1,6 @@
 [project]
 name = "agent_3_pattern_detection"
-version = "0.0.1"
+version = "0.0.9"
 description = "agent_3_pattern_detection"
 authors = [{ name = "SentinelFin", email = "sentinelfin@example.com" }]
 dependencies = [
