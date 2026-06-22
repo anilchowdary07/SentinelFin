@@ -1,42 +1,36 @@
-# UiPath Integration Guide: SentinelFin API
+# ⚙️ UiPath Integration & Architecture Guide
 
-This guide explains how to integrate the SentinelFin Python AI Backend natively into UiPath Studio and UiPath Maestro. By exposing our Python agents as a FastAPI service, you can achieve 100% real UiPath platform usage.
+This document explains exactly how SentinelFin utilizes the UiPath platform to govern an advanced 8-agent AI architecture.
 
-## Architecture Concept
-UiPath Maestro acts as the state machine and orchestration layer. When a case hits the "Deep Investigation" stage, a UiPath sequence uses an `HTTP Request` to call the SentinelFin API running locally (or hosted in the cloud). The API responds with the AI-generated Risk Score and SAR Narrative, which are then passed back into Maestro Case variables.
+## The Architecture Layers
 
-## Step 1: Start the SentinelFin API Server
-Ensure your Python environment is active and the AWS Bedrock Key is set.
-```bash
-export AWS_BEDROCK_KEY="your-api-key"
-uvicorn main:app --host 0.0.0.0 --port 8000
-```
-Verify it is running by navigating to `http://localhost:8000/docs` in your browser to see the Swagger UI.
+### 1. The Presentation Layer (React Dashboard)
+We built a custom React/Vite dashboard (`/dashboard/src/App.jsx`) that streams Server-Sent Events (SSE) from our FastAPI backend. This dashboard provides:
+- Live, animated SVG transaction network graphs.
+- Real-time streaming of AWS Bedrock Llama 3 "Thoughts".
+- Live Orchestrator Job Status polling.
 
-## Step 2: Configure UiPath Studio
-1. Open **UiPath Studio** and create a new Process.
-2. Install the **UiPath.WebAPI.Activities** package via Manage Packages if you haven't already.
-3. Drag an **HTTP Request** activity into your Main sequence.
+### 2. The Orchestration Layer (UiPath Maestro)
+While the Python agents do the "thinking", Maestro dictates the "workflow".
+- **Maestro Case Plan (`maestro/`):** We use a 3-stage Case Plan. 
+  1. Intake & Triage
+  2. AI Investigation
+  3. SAR Submission
+- **Maestro BPMN:** Inside the "AI Investigation" stage, a BPMN workflow sequentially calls our Coded Agents. We utilize native **Error Boundaries** in the BPMN to catch agent failures (e.g., if the FBI API goes down, the BPMN safely reroutes to a human queue).
 
-## Step 3: Configure the HTTP Request
-Set the properties of the HTTP Request activity as follows:
-- **Endpoint:** `"http://localhost:8000/api/investigate"`
-- **Method:** `POST`
-- **BodyFormat:** `application/json`
-- **Body:** Provide a serialized JSON string matching the expected `InvestigationPayload`. You can read `mock_data/scenario_layering.json` into a string variable and pass it here.
-- **Headers:** Add `Content-Type: application/json`
+### 3. The Execution Layer (UiPath Coded Agents)
+We built 8 distinct microservices and deployed them directly to Orchestrator using the UiPath CLI (`uip codedagent deploy`).
+- **Agent 1:** Triage
+- **Agent 2:** Sanctions Screener (Live FBI API)
+- **Agent 3:** Pattern Detection (AWS Bedrock Llama 3.1)
+- **Agent 4:** Network Investigator (Live Bitcoin Blockchain Tracing)
+- **Agent 5:** Regulatory Intel
+- **Agent 6:** SAR Writer (AWS Bedrock Llama 3.1)
+- **Agent 7:** Form Populator
+- **Agent 8:** Submission Audit (Dynamic HTML SAR Generator)
 
-## Step 4: Parse the Response
-1. Create a string variable `strResponse` and assign it to the **Result** output property of the HTTP Request.
-2. Use the **Deserialize JSON** activity to parse `strResponse` into a `JObject` variable named `jsonResponse`.
-3. Extract the critical data fields into UiPath string/integer variables:
-   - `RiskScore` (Int32) = `cint(jsonResponse("risk_score").ToString)`
-   - `SarNarrative` (String) = `jsonResponse("sar_narrative").ToString`
+### 4. The Governance Layer (UiPath Action Center)
+Before Agent 8 can execute, Agent 7 creates a task in **UiPath Action Center**. The Orchestrator job enters a **Suspended** state. The AI physically cannot proceed until a human BSA Officer logs in, reviews the drafted SAR, and clicks "Approve".
 
-## Step 5: Integrate with UiPath Maestro Case
-Now that your UiPath sequence successfully receives data from the AI Agent, you can map this into Maestro.
-1. Define a Maestro Case with a String property for `SAR_Narrative` and an Integer property for `Risk_Score`.
-2. Within your sequence, use the **Update Case** activity to write the values extracted in Step 4 back into the active Maestro Case.
-3. Configure a Maestro transition condition: If `Risk_Score > 80`, route the case to the "BSA Officer Review" (Gate 2) Action Center Task.
-
-You have now successfully orchestrated a dynamic Python AI Agent using native UiPath platform tools!
+### 5. The Data Layer (UiPath Data Service)
+All finalized investigations are logged into the `SAR_Investigations` entity inside UiPath Data Service, ensuring absolute enterprise auditability.
