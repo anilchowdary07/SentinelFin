@@ -19,6 +19,8 @@ class RegulatoryIntelligenceAgent:
         earliest_date_str = min(t['date'] for t in transactions)
         try:
             earliest_date = datetime.datetime.fromisoformat(earliest_date_str.replace('Z', '+00:00'))
+            if earliest_date.tzinfo is None:
+                earliest_date = earliest_date.replace(tzinfo=datetime.timezone.utc)
         except Exception:
             earliest_date = datetime.datetime.now(datetime.timezone.utc)
             

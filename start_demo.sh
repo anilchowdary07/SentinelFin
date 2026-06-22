@@ -3,7 +3,7 @@ echo "==========================================================="
 echo "🛡️  STARTING SENTINELFIN ENTERPRISE DASHBOARD"
 echo "==========================================================="
 echo "Starting FastAPI Backend (Port 8000)..."
-python3 app.py &
+python3 main.py &
 BACKEND_PID=$!
 
 echo "Starting React Frontend (Port 5173)..."

@@ -4,7 +4,7 @@ import {
   FileText, UploadCloud, CheckCircle, Loader, AlertTriangle,
   Play, Zap, ChevronDown, ChevronUp, Globe, Database, Eye,
   RefreshCw, Clock, TrendingUp, Lock, ArrowRight, Search,
-  Upload, X, FilePlus, FileCode, FileSpreadsheet, AlertCircle
+  Upload, X, FilePlus, FileCode, FileSpreadsheet, AlertCircle, Sun, Moon, Mail, Copy, PieChart, BarChart2
 } from 'lucide-react';
 
 // ── Document Upload Panel ─────────────────────────────────────────────────────
@@ -23,10 +23,10 @@ function DocumentUploadPanel({ onTransactionsExtracted }) {
     { ext: '.json', icon: FileCode,        label: 'JSON API Export',        color: '#A78BFA', desc: 'Structured alert feeds' },
   ];
 
-  const processFile = async (file) => {
+  const processFiles = async (files) => {
     setUploading(true); setError(null); setUploadResult(null);
     const formData = new FormData();
-    formData.append('file', file);
+    files.forEach(f => formData.append('files', f));
 
     try {
       const resp = await fetch('http://localhost:8000/api/upload-document', {
@@ -47,8 +47,8 @@ function DocumentUploadPanel({ onTransactionsExtracted }) {
 
   const onDrop = useCallback((e) => {
     e.preventDefault(); setDragging(false);
-    const file = e.dataTransfer?.files?.[0];
-    if (file) processFile(file);
+    const files = Array.from(e.dataTransfer?.files || []);
+    if (files.length) processFiles(files);
   }, []);
 
   const loadSample = async (type) => {
@@ -59,7 +59,7 @@ function DocumentUploadPanel({ onTransactionsExtracted }) {
       // Convert sample text to a Blob and upload
       const blob = new Blob([data.content], { type: 'text/plain' });
       const file = new File([blob], data.filename);
-      await processFile(file);
+      await processFiles([file]);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -78,10 +78,10 @@ function DocumentUploadPanel({ onTransactionsExtracted }) {
           <Upload size={16} color="#fff" />
         </div>
         <div>
-          <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: '#e2e8f0' }}>
+          <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)' }}>
             Document Intelligence — Step 1: Upload Evidence
           </h3>
-          <p style={{ margin: 0, fontSize: '0.75rem', color: '#6B7280' }}>
+          <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
             Upload bank statements, SWIFT messages, or TM system exports. AI extracts transaction data automatically.
           </p>
         </div>
@@ -98,7 +98,7 @@ function DocumentUploadPanel({ onTransactionsExtracted }) {
             }}>
               <Icon size={18} color={f.color} style={{ marginBottom: 4 }} />
               <div style={{ fontSize: '0.75rem', fontWeight: 700, color: f.color }}>{f.label}</div>
-              <div style={{ fontSize: '0.65rem', color: '#4B5563', marginTop: 2 }}>{f.desc}</div>
+              <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginTop: 2 }}>{f.desc}</div>
             </div>
           );
         })}
@@ -118,24 +118,24 @@ function DocumentUploadPanel({ onTransactionsExtracted }) {
           boxShadow: dragging ? '0 0 20px rgba(0,198,255,0.2)' : 'none',
           marginBottom: '1rem',
         }}>
-        <input ref={inputRef} type="file"
+        <input ref={inputRef} type="file" multiple
           accept=".pdf,.csv,.txt,.json,.swift,.mt103"
           style={{ display: 'none' }}
-          onChange={(e) => { const f = e.target.files?.[0]; if (f) processFile(f); }} />
+          onChange={(e) => { const files = Array.from(e.target.files || []); if (files.length) processFiles(files); }} />
 
         {uploading ? (
           <div style={{ color: '#00C6FF' }}>
             <Loader size={28} style={{ animation: 'spin 1s linear infinite', marginBottom: 8 }} />
             <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>Parsing document...</div>
-            <div style={{ fontSize: '0.72rem', color: '#6B7280', marginTop: 4 }}>Extracting transaction data with AI</div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: 4 }}>Extracting transaction data with AI</div>
           </div>
         ) : (
           <>
-            <UploadCloud size={28} color={dragging ? '#00C6FF' : '#4B5563'} style={{ marginBottom: 8 }} />
-            <div style={{ fontSize: '0.88rem', fontWeight: 700, color: dragging ? '#00C6FF' : '#9CA3AF' }}>
+            <UploadCloud size={28} color={dragging ? '#00C6FF' : 'var(--text-secondary)'} style={{ marginBottom: 8 }} />
+            <div style={{ fontSize: '0.88rem', fontWeight: 700, color: dragging ? '#00C6FF' : 'var(--text-secondary)' }}>
               {dragging ? 'Drop to parse document' : 'Drop file here or click to browse'}
             </div>
-            <div style={{ fontSize: '0.72rem', color: '#4B5563', marginTop: 4 }}>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: 4 }}>
               PDF, CSV, SWIFT MT103, JSON — max 10MB
             </div>
           </>
@@ -144,7 +144,7 @@ function DocumentUploadPanel({ onTransactionsExtracted }) {
 
       {/* Sample Documents */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: '0.75rem', color: '#6B7280', fontWeight: 600 }}>Try a sample:</span>
+        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Try a sample:</span>
         {[
           { type: 'swift', label: '⚡ SWIFT MT103', color: '#FFB020' },
           { type: 'csv',   label: '📊 TM Export CSV', color: '#10B981' },
@@ -200,12 +200,12 @@ function DocumentUploadPanel({ onTransactionsExtracted }) {
                 <div key={i} style={{
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   padding: '0.4rem 0.6rem', marginBottom: '0.3rem',
-                  background: 'rgba(0,0,0,0.3)', borderRadius: 6,
+                  background: 'var(--panel-bg)', borderRadius: 6,
                   fontSize: '0.75rem',
                 }}>
                   <div>
-                    <span style={{ color: '#9CA3AF', marginRight: 8 }}>{t.txn_id}</span>
-                    <span style={{ color: '#e2e8f0', fontWeight: 600 }}>
+                    <span style={{ color: 'var(--text-secondary)', marginRight: 8 }}>{t.txn_id}</span>
+                    <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
                       {t.originator?.name || t.originator?.account || '?'} → {t.beneficiary?.name || t.beneficiary?.account || '?'}
                     </span>
                   </div>
@@ -272,7 +272,7 @@ const SCENARIOS = {
   crypto: {
     label: '₿ Crypto Off-Ramp',
     badge: 'CRYPTO_ML',
-    color: '#A78BFA',
+    color: '#3B82F6',
     description: 'BTC mixer → OTC desk → bank wire chain',
     case_id: 'CAS-2026-031',
     alert_type: 'CRYPTOCURRENCY_MONEY_LAUNDERING',
@@ -307,15 +307,17 @@ const SCENARIOS = {
 };
 
 const AGENTS = [
-  { id:'maestro',    name:'UiPath Maestro',          icon:Zap,         desc:'Orchestrator Case Plan + HITL Gate', color:'#fa709a' },
-  { id:'triage',     name:'1. Triage Analyst',        icon:ShieldAlert,  desc:'Entity extraction & case context',   color:'#4facfe' },
-  { id:'sanctions',  name:'2. Sanctions Screener',    icon:Search,       desc:'REAL OFAC SDN API — exponential backoff', color:'#f59e0b' },
-  { id:'pattern',    name:'3. Pattern Detection',     icon:Activity,     desc:'Llama 3.1 writes live detection code', color:'#a78bfa' },
-  { id:'network',    name:'4. Network Investigator',  icon:Share2,       desc:'BFS graph traversal across jurisdictions', color:'#34d399' },
-  { id:'regulatory', name:'5. Regulatory Intel',      icon:BookOpen,     desc:'FinCEN 30-day SLA + BSA statute',    color:'#fb923c' },
-  { id:'writer',     name:'6. SAR Writer',             icon:Edit3,        desc:'Llama 3.1 → FinCEN 6-question SAR', color:'#60a5fa' },
-  { id:'populator',  name:'7. Form 111 Populator',    icon:FileText,     desc:'FinCEN Form 111 JSON schema mapping', color:'#4ade80' },
-  { id:'submission', name:'8. Audit & Action Center', icon:UploadCloud,  desc:'Tracking ID + Action Center HITL task', color:'#f472b6' },
+  { id:'maestro',    name:'UiPath Maestro',          icon:Zap,         desc:'Orchestrator Case Plan + HITL Gate', color:'#0EA5E9' },
+  { id:'triage',     name:'1. Triage Analyst',        icon:ShieldAlert,  desc:'Entity extraction & case context',   color:'#3B82F6' },
+  { id:'sanctions',  name:'2. Sanctions Screener',    icon:Search,       desc:'REAL OFAC SDN API — exponential backoff', color:'#F59E0B' },
+  { id:'pattern',    name:'3. Pattern Detection',     icon:Activity,     desc:'Llama 3.1 writes live detection code', color:'#06B6D4' },
+  { id:'network',    name:'4. Network Investigator',  icon:Share2,       desc:'BFS graph traversal across jurisdictions', color:'#10B981' },
+  { id:'regulatory', name:'5. Regulatory Intel',      icon:BookOpen,     desc:'FinCEN 30-day SLA + BSA statute',    color:'#F97316' },
+  { id:'writer',     name:'6. SAR Writer',             icon:Edit3,        desc:'Llama 3.1 → FinCEN 6-question SAR', color:'#60A5FA' },
+  { id:'populator',  name:'7. Form 111 Populator',    icon:FileText,     desc:'FinCEN Form 111 JSON schema mapping', color:'#34D399' },
+  { id:'submission', name:'8. Audit & Action Center', icon:UploadCloud,  desc:'Tracking ID + Action Center HITL task', color:'#059669' },
+  { id:'dataservice',name:'9. Data Service Sync',     icon:Database,     desc:'Push entities & risk profiles to Data Service', color:'#8B5CF6' },
+  { id:'integrations',name:'10. Integration Service', icon:Share2,       desc:'Dispatch Jira Ticket & Slack Alert', color:'#EC4899' },
 ];
 
 const JURISDICTION_FLAGS = {
@@ -352,7 +354,7 @@ function Collapse({ title, children, defaultOpen = true, accent }) {
       border: `1px solid ${accent || 'rgba(255,255,255,0.08)'}`, }}>
       <button onClick={() => setOpen(o => !o)} style={{
         width: '100%', textAlign: 'left', background: `${accent || 'rgba(255,255,255,0.03)'}11`,
-        border: 'none', color: '#e2e8f0', fontWeight: 700, fontSize: '0.9rem',
+        border: 'none', color: 'var(--text-primary)', fontWeight: 700, fontSize: '0.9rem',
         padding: '0.9rem 1.2rem', cursor: 'pointer', display: 'flex',
         justifyContent: 'space-between', alignItems: 'center',
         borderBottom: open ? `1px solid ${accent || 'rgba(255,255,255,0.08)'}` : 'none',
@@ -365,103 +367,75 @@ function Collapse({ title, children, defaultOpen = true, accent }) {
   );
 }
 
-// ── Animated Money Flow Graph ─────────────────────────────────────────────────
-function MoneyFlowGraph({ transactions, running, done }) {
-  const hops = [];
-  const seen = new Set();
-  for (const t of transactions) {
-    const from = t.originator?.name || t.originator?.account || '?';
-    const to   = t.beneficiary?.name || t.beneficiary?.account || '?';
-    const fromC = t.originator?.country || '';
-    const toC   = t.beneficiary?.country || '';
-    const key = `${from}→${to}`;
-    if (!seen.has(key)) { seen.add(key); hops.push({ from, to, fromC, toC, amount: t.amount, type: t.type }); }
-  }
-
-  // Build unique nodes
-  const nodeNames = [];
-  for (const h of hops) {
-    if (!nodeNames.includes(h.from)) nodeNames.push(h.from);
-    if (!nodeNames.includes(h.to))   nodeNames.push(h.to);
-  }
-
-  const nodeCount = nodeNames.length;
-  const svgW = 600, svgH = 120;
-  const nodeX = nodeNames.map((_, i) => 40 + (i / Math.max(nodeCount - 1, 1)) * (svgW - 80));
-  const nodeY = svgH / 2;
-  const nodeMap = Object.fromEntries(nodeNames.map((n, i) => [n, i]));
+// ── Asset Tracking Ledger ───────────────────────────────────────────────────
+function AssetTrackingLedger({ transactions, running, done }) {
+  if (!transactions || transactions.length === 0) return null;
   const flag = (c) => JURISDICTION_FLAGS[c] || '🏳️';
-  const riskC = (c) => {
-    const r = JURISDICTION_RISK[c] || 3;
-    if (r >= 8) return '#FF4D4D'; if (r >= 5) return '#FFB020'; return '#10B981';
-  };
-
   return (
-    <div style={{ position: 'relative' }}>
-      <svg viewBox={`0 0 ${svgW} ${svgH + 40}`} style={{ width: '100%', overflow: 'visible' }}>
-        <defs>
-          <marker id="flow-arr" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
-            <path d="M0,0 L0,6 L8,3 z" fill="#FF4D4D88" />
-          </marker>
-          {hops.map((_, i) => (
-            <linearGradient key={i} id={`flow-grad-${i}`} x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#FF4D4D" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#FFB020" stopOpacity="0.6" />
-            </linearGradient>
-          ))}
-        </defs>
+    <div style={{ 
+      display: 'flex', flexDirection: 'column', gap: '0.5rem',
+      maxHeight: '300px', overflowY: 'auto', paddingRight: '0.5rem'
+    }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1.5fr', gap: '1rem', 
+                    padding: '0.5rem 1rem', background: 'var(--panel-bg)', borderRadius: 8,
+                    fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 700, letterSpacing: '0.05em' }}>
+        <div>ORIGINATOR</div>
+        <div style={{ textAlign: 'center' }}>TRANSFER</div>
+        <div>BENEFICIARY</div>
+      </div>
+      
+      {transactions.map((t, i) => {
+        const animated = running || done;
+        return (
+          <div key={i} style={{ 
+            display: 'grid', gridTemplateColumns: '1.5fr 1fr 1.5fr', gap: '1rem', 
+            padding: '1rem', background: 'var(--bg-gradient)', borderRadius: 8,
+            border: '1px solid var(--panel-border)', alignItems: 'center',
+            opacity: animated ? 1 : 0.4, transition: 'opacity 0.5s',
+          }}>
+            {/* Originator */}
+            <div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-color)' }}>
+                {t.originator?.name || t.originator?.account || '?'}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 4 }}>
+                {flag(t.originator?.country)} {t.originator?.country || 'Unknown'}
+              </div>
+            </div>
 
-        {/* Flow arrows */}
-        {hops.map((h, i) => {
-          const x1 = nodeX[nodeMap[h.from]] + 18;
-          const x2 = nodeX[nodeMap[h.to]] - 18;
-          const animated = running || done;
-          return (
-            <g key={i}>
-              <line x1={x1} y1={nodeY} x2={x2} y2={nodeY}
-                stroke={`url(#flow-grad-${i})`} strokeWidth={2.5}
-                strokeDasharray={animated ? '8 4' : '4 4'}
-                markerEnd="url(#flow-arr)"
-                style={{ animation: animated ? 'flowDash 1.2s linear infinite' : 'none' }}
-              />
-              <text x={(x1 + x2) / 2} y={nodeY - 10} textAnchor="middle"
-                fill="#FFB020" fontSize={9} fontWeight={700}>
-                ${(h.amount / 1000).toFixed(0)}k
-              </text>
-            </g>
-          );
-        })}
+            {/* Transfer Amount & Arrow */}
+            <div style={{ textAlign: 'center', position: 'relative' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#FFB020' }}>
+                ${(t.amount || 0).toLocaleString()}
+              </div>
+              <div style={{ 
+                height: 2, background: 'linear-gradient(90deg, #FF4D4D, #FFB020)',
+                margin: '8px auto', position: 'relative', width: '80%',
+                borderRadius: 2, overflow: 'hidden'
+              }}>
+                {animated && (
+                  <div style={{
+                    position: 'absolute', top: 0, left: '-100%', width: '100%', height: '100%',
+                    background: 'rgba(255,255,255,0.4)',
+                    animation: 'flowDash 1.5s infinite linear'
+                  }} />
+                )}
+              </div>
+              <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>{t.type}</div>
+            </div>
 
-        {/* Nodes */}
-        {nodeNames.map((name, i) => {
-          const hop = hops.find(h => h.from === name || h.to === name);
-          const country = hop?.fromC === name ? hop?.fromC : hop?.toC;
-          const isSource = nodeMap[name] === 0;
-          const isDest   = nodeMap[name] === nodeNames.length - 1;
-          const nColor   = isSource ? '#FF4D4D' : isDest ? '#A78BFA' : '#FFB020';
-          return (
-            <g key={name}>
-              <circle cx={nodeX[i]} cy={nodeY} r={18}
-                fill={nColor + '22'} stroke={nColor} strokeWidth={1.5}
-                style={{ filter: (running || done) ? `drop-shadow(0 0 6px ${nColor})` : 'none' }}
-              />
-              <text x={nodeX[i]} y={nodeY + 4} textAnchor="middle" fontSize={10}>
-                {flag(country || '')}
-              </text>
-              <text x={nodeX[i]} y={nodeY + 34} textAnchor="middle"
-                fill="#9CA3AF" fontSize={8}>
-                {name.length > 12 ? name.slice(0, 12) + '…' : name}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
-      <style>{`
-        @keyframes flowDash {
-          from { stroke-dashoffset: 24; }
-          to   { stroke-dashoffset: 0; }
-        }
-      `}</style>
+            {/* Beneficiary */}
+            <div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-color)' }}>
+                {t.beneficiary?.name || t.beneficiary?.account || '?'}
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: 4 }}>
+                {flag(t.beneficiary?.country)} {t.beneficiary?.country || 'Unknown'}
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -539,7 +513,7 @@ function OrchestratorPanel({ jobKey, running }) {
   if (!jobKey || jobKey === 'N/A') return null;
 
   const stateColor = { Suspended: '#FFB020', Running: '#4facfe', Successful: '#10B981', Faulted: '#FF4D4D' };
-  const sc = stateColor[status?.state] || '#64748b';
+  const sc = stateColor[status?.state] || 'var(--text-secondary)';
 
   return (
     <div style={{
@@ -552,7 +526,7 @@ function OrchestratorPanel({ jobKey, running }) {
         </span>
         <button onClick={poll} disabled={loading} style={{
           background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: 6, padding: '4px 10px', color: '#9CA3AF', cursor: 'pointer', fontSize: '0.78rem',
+          borderRadius: 6, padding: '4px 10px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.78rem',
         }}>
           {loading ? '...' : '↻ Refresh'}
         </button>
@@ -560,11 +534,11 @@ function OrchestratorPanel({ jobKey, running }) {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.6rem', fontSize: '0.8rem' }}>
         {[
           { l: 'Process', v: 'agent_6_sar_signature_hitl', c: '#60a5fa' },
-          { l: 'Job Key', v: jobKey.slice(0, 8) + '...', c: '#9CA3AF' },
+          { l: 'Job Key', v: jobKey.slice(0, 8) + '...', c: 'var(--text-secondary)' },
           { l: 'State', v: status?.state || 'Checking...', c: sc },
         ].map((r, i) => (
-          <div key={i} style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 8, padding: '0.6rem' }}>
-            <div style={{ color: '#4a5568', fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{r.l}</div>
+          <div key={i} style={{ background: 'var(--panel-bg)', borderRadius: 8, padding: '0.6rem' }}>
+            <div style={{ color: 'var(--text-secondary)', fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{r.l}</div>
             <div style={{ fontWeight: 700, color: r.c, marginTop: 2 }}>{r.v}</div>
           </div>
         ))}
@@ -573,7 +547,7 @@ function OrchestratorPanel({ jobKey, running }) {
         <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: 'rgba(255,176,32,0.1)',
           border: '1px solid rgba(255,176,32,0.3)', borderRadius: 8, fontSize: '0.82rem', color: '#FFB020' }}>
           🔔 <strong>Waiting in Action Center</strong> — BSA Officer must review and approve the SAR before filing proceeds.
-          <div style={{ fontSize: '0.72rem', color: '#9CA3AF', marginTop: 4 }}>
+          <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: 4 }}>
             Open UiPath Action Center → Tasks → BSA SAR Review to approve
           </div>
         </div>
@@ -585,12 +559,12 @@ function OrchestratorPanel({ jobKey, running }) {
 // ── Architecture SVG ──────────────────────────────────────────────────────────
 function ArchDiagram() {
   const nodes = [
-    { x: 10,  y: 20,  w: 120, h: 38, label: 'React Dashboard',    sub: 'Doc Upload + Analyst', color: '#4facfe' },
-    { x: 180, y: 20,  w: 130, h: 38, label: 'FastAPI + LangGraph', sub: '8-Agent Pipeline',     color: '#a78bfa' },
-    { x: 360, y: 20,  w: 130, h: 38, label: 'AWS Bedrock',         sub: 'Llama 3.1 70B',        color: '#f59e0b' },
+    { x: 10,  y: 20,  w: 120, h: 38, label: 'React Dashboard',    sub: 'Doc Upload + Analyst', color: '#3B82F6' },
+    { x: 180, y: 20,  w: 130, h: 38, label: 'FastAPI + LangGraph', sub: '8-Agent Pipeline',     color: '#0EA5E9' },
+    { x: 360, y: 20,  w: 130, h: 38, label: 'AWS Bedrock',         sub: 'Llama 3.1 70B',        color: '#F59E0B' },
     { x: 10,  y: 98,  w: 120, h: 38, label: 'Doc Intelligence',    sub: 'PDF·CSV·SWIFT·JSON',   color: '#00C6FF' },
-    { x: 180, y: 98,  w: 130, h: 38, label: 'UiPath Maestro',      sub: 'Case Orchestrator',    color: '#fa709a' },
-    { x: 360, y: 98,  w: 130, h: 38, label: 'Action Center',       sub: 'BSA Officer HITL',     color: '#34d399' },
+    { x: 180, y: 98,  w: 130, h: 38, label: 'UiPath Maestro',      sub: 'Case Orchestrator',    color: '#10B981' },
+    { x: 360, y: 98,  w: 130, h: 38, label: 'Action Center',       sub: 'BSA Officer HITL',     color: '#059669' },
   ];
   const arrows = [
     [130, 39, 180, 39], [310, 39, 360, 39],
@@ -624,10 +598,107 @@ function ArchDiagram() {
   );
 }
 
+// ── Autopilot Widget ──────────────────────────────────────────────────────────
+function AutopilotWidget({ caseData }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [chat, setChat] = useState([{ role: 'assistant', content: 'Hi! I am UiPath Autopilot. How can I help you analyze this case?' }]);
+  const [loading, setLoading] = useState(false);
+  const endRef = useRef(null);
+
+  useEffect(() => { if (endRef.current) endRef.current.scrollIntoView({ behavior: 'smooth' }); }, [chat]);
+
+  const sendQuery = async (e) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    const userQ = query;
+    setQuery('');
+    setChat(prev => [...prev, { role: 'user', content: userQ }]);
+    setLoading(true);
+
+    try {
+      const resp = await fetch('http://localhost:8000/api/autopilot-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: userQ, case_id: caseData?.case_id || 'UNKNOWN', context: caseData }),
+      });
+      const data = await resp.json();
+      setChat(prev => [...prev, { role: 'assistant', content: data.answer }]);
+    } catch (err) {
+      setChat(prev => [...prev, { role: 'assistant', content: 'Error connecting to Autopilot.' }]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      {/* Floating Button */}
+      <button onClick={() => setOpen(!open)} style={{
+        position: 'fixed', bottom: 30, right: 30, background: 'linear-gradient(135deg, #00C6FF, #0072FF)',
+        border: 'none', borderRadius: '50%', width: 60, height: 60, color: '#fff',
+        boxShadow: '0 8px 30px rgba(0, 198, 255, 0.4)', cursor: 'pointer', zIndex: 1000,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'transform 0.2s'
+      }} onMouseOver={e => e.currentTarget.style.transform = 'scale(1.1)'} onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}>
+        {open ? <X size={28} /> : <Zap size={28} fill="#fff" />}
+      </button>
+
+      {/* Chat Panel */}
+      {open && (
+        <div style={{
+          position: 'fixed', bottom: 100, right: 30, width: 380, height: 500,
+          background: 'var(--panel-bg)', border: '1px solid var(--panel-border)', borderRadius: 16,
+          boxShadow: '0 10px 40px rgba(0,0,0,0.5)', zIndex: 999, display: 'flex', flexDirection: 'column',
+          overflow: 'hidden',
+        }}>
+          <div style={{ padding: '1rem', background: 'linear-gradient(135deg, #00C6FF22, #0072FF22)', borderBottom: '1px solid var(--panel-border)', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Zap size={20} color="#00C6FF" fill="#00C6FF" />
+            <div>
+              <div style={{ fontWeight: 800, color: '#00C6FF', fontSize: '1rem' }}>UiPath Autopilot</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>GenAI Assistant for Analysts</div>
+            </div>
+          </div>
+
+          <div style={{ flex: 1, padding: '1rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {chat.map((msg, i) => (
+              <div key={i} style={{ alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '85%' }}>
+                <div style={{
+                  background: msg.role === 'user' ? '#0072FF' : 'var(--bg-gradient)',
+                  color: '#fff', padding: '0.8rem 1rem', borderRadius: 12,
+                  borderBottomRightRadius: msg.role === 'user' ? 2 : 12,
+                  borderBottomLeftRadius: msg.role === 'assistant' ? 2 : 12,
+                  fontSize: '0.85rem', lineHeight: 1.5, border: msg.role === 'assistant' ? '1px solid var(--panel-border)' : 'none'
+                }}>
+                  {msg.content}
+                </div>
+              </div>
+            ))}
+            {loading && (
+              <div style={{ alignSelf: 'flex-start', background: 'var(--bg-gradient)', padding: '0.8rem', borderRadius: 12, border: '1px solid var(--panel-border)' }}>
+                <Loader size={16} color="#00C6FF" style={{ animation: 'spin 1s linear infinite' }} />
+              </div>
+            )}
+            <div ref={endRef} />
+          </div>
+
+          <form onSubmit={sendQuery} style={{ padding: '1rem', borderTop: '1px solid var(--panel-border)', display: 'flex', gap: 10, background: 'var(--bg-color)' }}>
+            <input type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="Ask Autopilot about this case..."
+              style={{ flex: 1, background: 'var(--bg-gradient)', border: '1px solid var(--panel-border)', borderRadius: 20, padding: '0.6rem 1rem', color: 'var(--text-color)', outline: 'none' }} />
+            <button type="submit" disabled={loading || !query.trim()} style={{ background: '#0072FF', border: 'none', borderRadius: '50%', width: 40, height: 40, color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ArrowRight size={18} />
+            </button>
+          </form>
+        </div>
+      )}
+    </>
+  );
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 // Main App
 // ══════════════════════════════════════════════════════════════════════════════
 export default function App() {
+  const [isLightMode,  setIsLightMode]  = useState(false);
   const [scenario,     setScenario]     = useState('layering');
   const [agentStates,  setAgentStates]  = useState(AGENTS.map(() => 'idle'));
   const [result,       setResult]       = useState(null);
@@ -637,30 +708,60 @@ export default function App() {
   const [logs,         setLogs]         = useState([]);
   const [uploadedCase, setUploadedCase] = useState(null); // From document upload
   const [uploadedDocs, setUploadedDocs] = useState([]);   // Evidence locker
+  
+  // New UI Flow States
+  const [caseLoaded,   setCaseLoaded]   = useState(false);
+  const [isExtracting, setIsExtracting] = useState(false);
   const logsRef = useRef(null);
 
   // The active case: uploaded doc takes priority over preset scenario
   const CASE = uploadedCase || SCENARIOS[scenario];
   const totalAmount = CASE.transactions.reduce((s, t) => s + t.amount, 0);
 
-  // Called when DocumentUploadPanel successfully extracts transactions
   const handleDocumentExtracted = (uploadResult) => {
-    const newCase = {
-      label:       `📄 ${uploadResult.filename}`,
-      badge:       'DOCUMENT_UPLOAD',
-      color:       '#00C6FF',
-      description: `${uploadResult.tx_count} transactions extracted via ${uploadResult.parse_method}`,
-      case_id:     `CAS-DOC-${Date.now().toString(36).toUpperCase()}`,
-      alert_type:  'DOCUMENT_UPLOAD',
-      transactions: uploadResult.transactions,
-    };
-    setUploadedCase(newCase);
-    setUploadedDocs(prev => [...prev, { ...uploadResult, case_id: newCase.case_id }]);
-    setResult(null); setLogs([]); setError(null);
-    setAgentStates(AGENTS.map(() => 'idle'));
+    setIsExtracting(true);
+    setTimeout(() => {
+      const newCase = {
+        label:       `📄 ${uploadResult.filename}`,
+        badge:       'DOCUMENT_UPLOAD',
+        color:       '#00C6FF',
+        description: `${uploadResult.tx_count} transactions extracted via ${uploadResult.parse_method}`,
+        case_id:     `CAS-DOC-${Date.now().toString(36).toUpperCase()}`,
+        alert_type:  'DOCUMENT_UPLOAD',
+        transactions: uploadResult.transactions,
+      };
+      setUploadedCase(newCase);
+      setUploadedDocs(prev => [...prev, { ...uploadResult, case_id: newCase.case_id }]);
+      setResult(null); setLogs([]); setError(null);
+      setAgentStates(AGENTS.map(() => 'idle'));
+      
+      setIsExtracting(false);
+      setCaseLoaded(true);
+    }, 1500); // Simulate extraction animation delay
   };
 
-  const clearUpload = () => { setUploadedCase(null); };
+  const handleClipboardAI = () => {
+    if (!result || !result.fincen_form_111) return;
+    const form = result.fincen_form_111;
+    const text = `
+========================================
+[UiPath Clipboard AI] Legacy Mainframe Mapping
+========================================
+TRACKING_ID:    ${result.fincen_tracking_id}
+RISK_SCORE:     ${result.final_risk_score}/100
+PATTERN:        ${result.pattern_name}
+SAR_SUBJECT:    ${form.subject_information?.last_name || 'UNKNOWN'}
+SAR_AMOUNT:     $${form.suspicious_activity_information?.total_amount || 0}
+SAR_NARRATIVE:  ${result.sar_narrative.split('\n')[0]}...
+========================================
+READY FOR LEGACY TERMINAL PASTE
+========================================`;
+    navigator.clipboard.writeText(text.trim());
+    addLog(`📋 Copied formatted data to clipboard via Clipboard AI`, 'done');
+    // Briefly change button text or show toast if needed
+  };
+
+  const clearUpload = () => { setUploadedCase(null); setCaseLoaded(false); };
 
   useEffect(() => {
     if (logsRef.current) logsRef.current.scrollTop = logsRef.current.scrollHeight;
@@ -736,354 +837,369 @@ export default function App() {
     }
   };
 
+  const handleDownloadReport = () => {
+    if (!result) return;
+    const content = `FINCEN SAR REPORT\n====================\n\n${result.sar_narrative}\n\nFORM 111 JSON DATA\n====================\n${JSON.stringify(result.fincen_form_111, null, 2)}`;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `SAR_Report_${result.fincen_tracking_id || 'export'}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const riskColor = result ? getRiskColor(result.final_risk_score) : '#4facfe';
   const uniqueJurisdictions = [...new Set(
     CASE.transactions.flatMap(t => [t.originator?.country, t.beneficiary?.country].filter(Boolean))
   )];
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'radial-gradient(ellipse at 10% 0%, rgba(37,99,235,0.15) 0%, transparent 50%), radial-gradient(ellipse at 90% 10%, rgba(168,85,247,0.15) 0%, transparent 50%), #0F172A',
-      fontFamily: "'Inter', system-ui, sans-serif",
-      color: '#F8FAFC',
-      backgroundAttachment: 'fixed',
+    <div className={isLightMode ? 'light-mode' : ''} style={{
+      display: 'flex', height: '100vh', overflow: 'hidden',
+      background: 'var(--bg-gradient)', fontFamily: "'Inter', system-ui, sans-serif",
+      color: 'var(--text-primary)', transition: 'all 0.5s ease',
     }}>
-      {/* ── HERO HEADER ── */}
+      {/* ── LEFT SIDEBAR ── */}
       <div style={{
-        background: 'linear-gradient(135deg, rgba(0,114,255,0.1), rgba(157,80,187,0.07), rgba(250,112,154,0.05))',
-        borderBottom: '1px solid rgba(255,255,255,0.07)',
-        padding: '1.8rem 2rem 1.5rem',
+        width: 300, background: 'var(--header-bg)', borderRight: '1px solid var(--border-color)',
+        display: 'flex', flexDirection: 'column', padding: '1.5rem', zIndex: 10,
+        boxShadow: '4px 0 20px var(--shadow-color)', flexShrink: 0,
       }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
-            {/* Brand */}
-            <div>
-              <h1 style={{
-                background: 'linear-gradient(135deg, #00C6FF 0%, #0072FF 50%, #9D50BB 100%)',
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                margin: 0, fontSize: '2.6rem', fontWeight: 900, letterSpacing: '-1.5px',
-              }}>🛡️ SentinelFin</h1>
-              <p style={{ margin: '0.3rem 0 0', color: '#9CA3AF', fontSize: '0.95rem', fontWeight: 300 }}>
-                Autonomous AML Compliance · 8-Agent LangGraph + Llama 3.1 + UiPath Maestro + Real OFAC SDN API
-              </p>
-            </div>
+        {/* Brand */}
+        <div style={{ marginBottom: '2.5rem' }}>
+          <h1 style={{
+            background: 'linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-blue) 100%)',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            margin: 0, fontSize: '2.2rem', fontWeight: 900, letterSpacing: '-1px',
+          }}>🛡️ SentinelFin</h1>
+          <p style={{ margin: '0.3rem 0 0', color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Autonomous AML Compliance
+          </p>
+        </div>
 
-            {/* Controls */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-              {/* Scenario Selector */}
-              <div style={{ display: 'flex', gap: '0.4rem' }}>
-                {Object.entries(SCENARIOS).map(([key, sc]) => (
-                  <button key={key} onClick={() => { setScenario(key); setResult(null); setLogs([]); setAgentStates(AGENTS.map(() => 'idle')); }}
-                    style={{
-                      background: scenario === key ? sc.color + '22' : 'rgba(255,255,255,0.04)',
-                      border: `1px solid ${scenario === key ? sc.color + '77' : 'rgba(255,255,255,0.1)'}`,
-                      borderRadius: 8, padding: '7px 13px', color: scenario === key ? sc.color : '#8b9bb4',
-                      fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s',
-                    }}>
-                    {sc.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Resilience Toggle */}
-              <label style={{
-                display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer',
-                background: resilience ? 'rgba(255,77,77,0.1)' : 'rgba(255,255,255,0.04)',
-                border: `1px solid ${resilience ? '#FF4D4D55' : 'rgba(255,255,255,0.1)'}`,
-                borderRadius: 8, padding: '7px 13px', transition: 'all 0.2s',
-              }}>
-                <input type="checkbox" checked={resilience}
-                  onChange={e => setResilience(e.target.checked)}
-                  style={{ accentColor: '#FF4D4D' }} />
-                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: resilience ? '#FF4D4D' : '#8b9bb4' }}>
-                  🔴 Resilience Demo
-                </span>
-              </label>
-
-              {/* Start Button */}
-              <button id="start-investigation-btn" onClick={startInvestigation} disabled={running}
+        {/* Controls */}
+        <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem' }}>
+          <h3 style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem' }}>Investigation Scenarios</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '2rem' }}>
+            {Object.entries(SCENARIOS).map(([key, sc]) => (
+              <button key={key} onClick={() => { 
+                  setScenario(key); setResult(null); setLogs([]); setAgentStates(AGENTS.map(() => 'idle')); clearUpload(); 
+                  setCaseLoaded(false); setIsExtracting(true);
+                  setTimeout(() => { setIsExtracting(false); setCaseLoaded(true); }, 1200);
+                }}
                 style={{
-                  background: running ? 'rgba(255,255,255,0.08)' : 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)',
-                  border: 'none', borderRadius: 10, padding: '11px 26px',
-                  color: running ? '#8b9bb4' : '#fff', fontWeight: 800, fontSize: '0.95rem',
-                  cursor: running ? 'not-allowed' : 'pointer',
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  boxShadow: running ? 'none' : '0 4px 20px rgba(255,107,107,0.45)',
-                  transition: 'all 0.25s cubic-bezier(0.175,0.885,0.32,1.275)',
-                  textTransform: 'uppercase', letterSpacing: '0.08em',
+                  textAlign: 'left', background: scenario === key && !uploadedCase ? sc.color + '22' : 'var(--btn-bg)',
+                  border: `1px solid ${scenario === key && !uploadedCase ? sc.color + '77' : 'var(--border-color)'}`,
+                  borderRadius: 10, padding: '12px 14px', color: scenario === key && !uploadedCase ? sc.color : 'var(--text-secondary)',
+                  fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s',
+                  display: 'flex', alignItems: 'center', gap: '0.6rem'
                 }}>
-                {running ? <><Loader size={15} style={{ animation: 'spin 1s linear infinite' }} />Investigating...</>
-                         : <><Play size={15} />Start Investigation</>}
+                <span style={{ fontSize: '1.2rem' }}>{sc.label.split(' ')[0]}</span>
+                <span>{sc.label.split(' ').slice(1).join(' ')}</span>
               </button>
-            </div>
-          </div>
-
-          {/* Problem Statement Bar */}
-          <div style={{ marginTop: '1.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: '0.75rem' }}>
-            {[
-              { icon: '📊', label: 'False Positive Rate', val: '95%', sub: 'Traditional rule-based AML', color: '#FF4D4D' },
-              { icon: '⏱️', label: 'Manual Investigation', val: '4+ hrs', sub: 'Per case, per analyst', color: '#FFB020' },
-              { icon: '⚡', label: 'SentinelFin Resolution', val: '<60 sec', sub: 'Full 8-agent AI pipeline', color: '#10B981' },
-              { icon: '🏛️', label: 'Compliance Risk', val: '$10M+', sub: 'Per FinCEN filing failure', color: '#A78BFA' },
-            ].map((s, i) => (
-              <div key={i} style={{
-                background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)',
-                borderLeft: `3px solid ${s.color}`, borderRadius: 10, padding: '0.9rem 1rem',
-                display: 'flex', alignItems: 'center', gap: '0.8rem',
-              }}>
-                <span style={{ fontSize: '1.6rem' }}>{s.icon}</span>
-                <div>
-                  <div style={{ fontSize: '0.68rem', color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{s.label}</div>
-                  <div style={{ fontSize: '1.35rem', fontWeight: 900, color: s.color, lineHeight: 1.1 }}>{s.val}</div>
-                  <div style={{ fontSize: '0.68rem', color: '#4B5563', marginTop: 1 }}>{s.sub}</div>
-                </div>
-              </div>
             ))}
           </div>
+
+          <h3 style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem' }}>System Settings</h3>
+
+          <button onClick={() => setIsLightMode(!isLightMode)}
+            style={{
+              width: '100%', background: 'var(--btn-bg)', border: '1px solid var(--border-color)',
+              borderRadius: 10, padding: '12px 14px', color: 'var(--text-secondary)',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.6rem', transition: 'all 0.2s',
+              fontSize: '0.85rem', fontWeight: 600
+            }}>
+            {isLightMode ? <Moon size={16} /> : <Sun size={16} />}
+            {isLightMode ? 'Dark Mode' : 'Light Mode'}
+          </button>
+        </div>
+
+        {/* Start Button at bottom of sidebar */}
+        <div style={{ marginTop: '1.5rem' }}>
+          <button id="start-investigation-btn" onClick={startInvestigation} disabled={running || !caseLoaded}
+            style={{
+              width: '100%', background: running ? 'var(--btn-bg)' : 'linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-cyan) 100%)',
+              border: running ? '1px solid var(--border-color)' : 'none', borderRadius: 12, padding: '14px',
+              color: running ? 'var(--text-secondary)' : '#fff', fontWeight: 800, fontSize: '0.95rem',
+              cursor: running ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              boxShadow: running ? 'none' : '0 8px 25px rgba(14,165,233,0.4)', transition: 'all 0.2s', textTransform: 'uppercase', letterSpacing: '0.05em',
+            }}>
+            {running ? <><Loader size={16} style={{ animation: 'spin 1s linear infinite' }} />Running...</> : <><Play size={16} />Start AI Engine</>}
+          </button>
         </div>
       </div>
 
-      {/* ── MAIN 3-PANEL LAYOUT ── */}
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '1.8rem 2rem' }}>
-
-        {/* Document Upload Panel — Step 1 */}
-        <DocumentUploadPanel onTransactionsExtracted={handleDocumentExtracted} />
-
-        {/* Uploaded Document Active Badge */}
-        {uploadedCase && (
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '0.75rem 1rem', marginBottom: '1.25rem',
-            background: 'rgba(0,198,255,0.08)', border: '1px solid rgba(0,198,255,0.3)',
-            borderRadius: 10,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <span style={{ fontSize: '1.1rem' }}>📄</span>
-              <div>
-                <div style={{ fontWeight: 700, color: '#00C6FF', fontSize: '0.88rem' }}>
-                  Document-Driven Investigation Active: {uploadedCase.case_id}
-                </div>
-                <div style={{ fontSize: '0.72rem', color: '#6B7280' }}>
-                  {uploadedCase.description} — Click Start Investigation to analyse
-                </div>
+      {/* ── MAIN CANVAS ── */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '2rem 3rem', display: 'flex', flexDirection: 'column' }}>
+        
+        {!caseLoaded ? (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', animation: 'fadeIn 0.5s ease' }}>
+            {isExtracting ? (
+              <div style={{ textAlign: 'center' }}>
+                 <Loader size={60} color="var(--accent-blue)" style={{ animation: 'spin 1.5s linear infinite', marginBottom: '1.5rem', display: 'inline-block' }} />
+                 <h2 style={{ fontSize: '1.8rem', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 800 }}>Extracting Intelligence...</h2>
+                 <p style={{ color: 'var(--text-secondary)' }}>Parsing structured entities, transactions, and risk scores using OCR & LLMs.</p>
               </div>
-            </div>
-            <button onClick={clearUpload} style={{
-              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: 6, padding: '4px 10px', color: '#9CA3AF', cursor: 'pointer', fontSize: '0.76rem',
-            }}>
-              ✕ Clear Upload
-            </button>
-          </div>
-        )}
-
-        {/* Row 1: Architecture + Case Overview */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: '1.25rem', marginBottom: '1.25rem' }}>
-          {/* Architecture */}
-          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '1.4rem' }}>
-            <h3 style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-              🏗️ System Architecture — Cross-Platform Integration
-            </h3>
-            <ArchDiagram />
-          </div>
-
-          {/* Case Overview */}
-          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '1.4rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.5rem', marginBottom: '1.25rem' }}>
-              {[
-                { l: 'Pattern', v: result ? result.pattern_name : 'Scanning...', c: '#A78BFA' },
-                { l: 'Network Depth', v: result ? `${result.network_depth} hops` : 'Analyzing...', c: '#4facfe' },
-                { l: 'FinCEN 111', v: result && result.fincen_tracking_id ? 'Ready' : 'Pending...', c: '#10B981' },
-                { l: 'Orchestrator Job',  v: result ? `Job ${result.action_center_item_id?.slice(0, 8)}…` : 'Pending...', c: '#34d399' },
-              ].map((r, i) => (
-                <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '0.6rem' }}>
-                  <div style={{ fontSize: '0.68rem', color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{r.l}</div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: r.c }}>{r.v}</div>
-                </div>
-              ))}
-            </div>
-            <h3 style={{ margin: '0 0 0.8rem', fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-              📋 Active Case — {CASE.case_id}
-            </h3>
-            <div style={{ marginBottom: '0.8rem' }}>
-              <Badge color={CASE.color}>{CASE.badge.replace(/_/g, ' ')}</Badge>
-              <span style={{ marginLeft: 8, fontSize: '0.78rem', color: '#6B7280' }}>{CASE.description}</span>
-            </div>
-            {[
-              { l: 'Total Volume',   v: `$${totalAmount.toLocaleString()}`, c: '#FF4D4D' },
-              { l: 'Transactions',   v: `${CASE.transactions.length} transfers`, c: '#4facfe' },
-              { l: 'Risk Score',     v: result ? `${result.final_risk_score}/100` : 'Pending...', c: result ? riskColor : '#4a5568' },
-              { l: 'Sanctions Hit',  v: result ? (result.sanctions_hits ? '⚠️ YES — OFAC SDN' : '✅ None Found') : 'Pending...', c: result?.sanctions_hits ? '#FF4D4D' : '#10B981' },
-              { l: 'FinCEN SLA',     v: result ? `${result.sla_status} (${result.days_remaining}d)` : 'Pending...', c: '#FFB020' },
-              { l: 'Action Center',  v: result ? `Job ${result.action_center_item_id?.slice(0, 8)}…` : 'Pending...', c: '#34d399' },
-            ].map((r, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.4rem 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                <span style={{ color: '#6B7280', fontSize: '0.82rem' }}>{r.l}</span>
-                <span style={{ color: r.c, fontWeight: 700, fontSize: '0.82rem' }}>{r.v}</span>
+            ) : (
+              <div style={{ width: '100%', maxWidth: 800, textAlign: 'center' }}>
+                 <div style={{ fontSize: '3.5rem', marginBottom: '1rem', animation: 'fadeIn 1s ease' }}>📥</div>
+                 <h1 style={{ fontSize: '2.5rem', fontWeight: 900, marginBottom: '1rem', color: 'var(--text-primary)', letterSpacing: '-0.03em' }}>Upload Evidence to Begin</h1>
+                 <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', marginBottom: '3rem', lineHeight: 1.6 }}>
+                   Upload bank statements, SWIFT MT103 logs, or TM alerts. <br/> SentinelFin will instantly structure the data and prepare the Agentic Pipeline.
+                 </p>
+                 <div className="glass-card" style={{ padding: '2.5rem', textAlign: 'left', background: 'var(--panel-bg)' }}>
+                   <DocumentUploadPanel onTransactionsExtracted={handleDocumentExtracted} />
+                 </div>
+                 <p style={{ marginTop: '2rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                   Or select a pre-configured <strong style={{ color: 'var(--accent-cyan)' }}>Investigation Scenario</strong> from the sidebar.
+                 </p>
               </div>
-            ))}
+            )}
           </div>
-        </div>
-
-
-
-        {/* Row 3: Agent Pipeline */}
-        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '1.4rem', marginBottom: '1.25rem' }}>
-          <h3 style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-            🤖 LangGraph Multi-Agent Pipeline — UiPath Maestro Orchestrated
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '0.7rem' }}>
-            {AGENTS.map((agent, idx) => {
-              const st = agentStates[idx];
-              const Icon = agent.icon;
-              const isSuspended = st === 'suspended';
-              const isActive = st === 'active' || isSuspended;
-              const isDone = st === 'done';
-              const isError = st === 'error';
-              
-              const currentBorderColor = isDone ? agent.color + '55' : isSuspended ? '#FFB020' : isActive ? agent.color + '88' : isError ? '#FF4D4D44' : 'rgba(255,255,255,0.06)';
-              const currentBgColor = isDone ? `${agent.color}0F` : isSuspended ? 'rgba(255,176,32,0.1)' : isActive ? `${agent.color}1A` : isError ? 'rgba(255,77,77,0.07)' : 'rgba(255,255,255,0.02)';
-              
-              return (
-                <div key={agent.id} style={{
-                  background: currentBgColor,
-                  border: `1px solid ${currentBorderColor}`,
-                  borderRadius: 10, padding: '0.85rem',
-                  boxShadow: isSuspended ? `0 0 20px rgba(255,176,32,0.3), inset 0 0 10px rgba(255,176,32,0.1)` : isActive ? `0 0 20px ${agent.color}33, inset 0 0 10px ${agent.color}11` : 'none',
-                  transform: isActive ? 'scale(1.02)' : 'scale(1)',
-                  transition: 'all 0.35s cubic-bezier(0.4,0,0.2,1)',
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.25rem' }}>
-                    {isDone ? <CheckCircle size={15} color={agent.color} />
-                     : isSuspended ? <AlertTriangle size={15} color="#FFB020" style={{ animation: 'pulse 1.5s infinite' }} />
-                     : isActive ? <Loader size={15} color={agent.color} style={{ animation: 'spin 1s linear infinite' }} />
-                     : isError ? <AlertTriangle size={15} color="#FF4D4D" />
-                     : <Icon size={15} color="#374151" />}
-                    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: isDone || isActive ? (isSuspended ? '#FFB020' : agent.color) : '#4B5563' }}>
-                      {agent.name} {isSuspended ? '(WAITING IN ORCHESTRATOR JOBS)' : ''}
-                    </span>
-                  </div>
-                  <p style={{ margin: 0, fontSize: '0.68rem', color: '#374151', lineHeight: 1.4 }}>{agent.desc}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Row 4: Live Log */}
-        {logs.length > 0 && (
-          <div style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, padding: '1rem', marginBottom: '1.25rem', fontFamily: 'monospace' }}>
-            <div style={{ fontSize: '0.72rem', color: '#4ade80', marginBottom: '0.5rem', fontWeight: 700, letterSpacing: '0.1em' }}>▶ LIVE AGENT LOG</div>
-            <div ref={logsRef} style={{ maxHeight: 160, overflowY: 'auto' }}>
-              {logs.map((l, i) => (
-                <div key={i} style={{
-                  fontSize: '0.76rem',
-                  color: l.type === 'error' ? '#FF4D4D' : l.type === 'done' ? '#4ade80' : l.type === 'start' ? '#60a5fa' : '#6B7280',
-                  marginBottom: '0.12rem',
-                }}>
-                  <span style={{ color: '#374151', marginRight: 8 }}>[{l.t}]</span>{l.msg}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Error */}
-        {error && (
-          <div style={{ background: 'rgba(255,77,77,0.08)', border: '1px solid #FF4D4D44', borderRadius: 10, padding: '1rem', marginBottom: '1.25rem', color: '#FF4D4D' }}>
-            <AlertTriangle size={15} style={{ display: 'inline', marginRight: 6 }} />
-            <strong>Backend Error:</strong> {error}
-            <div style={{ marginTop: 6, fontSize: '0.8rem', opacity: 0.7 }}>
-              Run: <code>cd /Users/anilchowdary/Documents/ui_path_agent_hackathon && source venv/bin/activate && export $(cat .env | xargs) && uvicorn main:app --port 8000</code>
-            </div>
-          </div>
-        )}
-
-        {/* ── RESULTS ── */}
-        {result && (
+        ) : (
           <div style={{ animation: 'fadeIn 0.5s ease' }}>
-            {/* Summary Banner */}
-            <div style={{
-              display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '1.5rem', alignItems: 'center',
-              padding: '1.5rem', marginBottom: '1.25rem',
-              background: 'linear-gradient(135deg, rgba(16,185,129,0.08), rgba(0,114,255,0.05))',
-              border: '1px solid rgba(16,185,129,0.2)', borderRadius: 14,
-            }}>
-              <RiskGauge score={result.final_risk_score} color={riskColor} />
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.6rem', flexWrap: 'wrap' }}>
-                  <CheckCircle color="#10B981" size={20} />
-                  <span style={{ fontWeight: 800, color: '#10B981', fontSize: '1.05rem' }}>All 8 Agents Completed</span>
-                  <Badge color={riskColor}>{result.final_risk_score >= 85 ? '🚨 CRITICAL' : result.final_risk_score >= 60 ? '⚠️ HIGH' : '✅ LOW'} RISK</Badge>
-                  {result.sanctions_hits && <Badge color="#FF4D4D">🔴 OFAC SDN HIT</Badge>}
-                  <Badge color="#FFB020">SLA: {result.sla_status} ({result.days_remaining}d)</Badge>
+            {/* Top Stats Bar */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '2.5rem' }}>
+              {[
+                { icon: '📊', label: 'False Positive Rate', val: '95%', sub: 'Traditional Rules', color: 'var(--accent-red)' },
+                { icon: '⏱️', label: 'Manual Investigation', val: '4+ hrs', sub: 'Per Case', color: 'var(--accent-orange)' },
+                { icon: '⚡', label: 'SentinelFin Agentic', val: '<60 sec', sub: '8-Agent Pipeline', color: 'var(--accent-green)' },
+                { icon: '🏛️', label: 'Compliance Risk', val: '$10M+', sub: 'Per FinCEN Failure', color: 'var(--accent-blue)' },
+              ].map((s, i) => (
+                <div key={i} className="glass-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
+                  <span style={{ fontSize: '2.2rem' }}>{s.icon}</span>
+                  <div>
+                    <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{s.label}</div>
+                    <div style={{ fontSize: '1.6rem', fontWeight: 900, color: s.color, lineHeight: 1.1, marginTop: 4 }}>{s.val}</div>
+                    <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginTop: 4 }}>{s.sub}</div>
+                  </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.5rem', fontSize: '0.8rem' }}>
-                  {[
-                    { l: 'Pattern Detected', v: result.pattern_name, c: '#A78BFA' },
-                    { l: 'FinCEN Tracking ID', v: result.fincen_tracking_id, c: '#10B981' },
-                    { l: 'Action Center Job', v: result.action_center_item_id?.slice(0, 18) + '…', c: '#FFB020' },
-                    { l: 'Network Depth', v: `${result.network_depth} jurisdictions`, c: '#4facfe' },
-                  ].map((r, i) => (
-                    <div key={i}>
-                      <div style={{ color: '#4B5563', fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{r.l}</div>
-                      <div style={{ color: r.c, fontWeight: 700 }}>{r.v}</div>
+              ))}
+            </div>
+
+        {/* BENTO GRID */}
+        <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: '2rem', alignItems: 'start' }}>
+          
+          {/* Left Column: Vertical Agent Pipeline */}
+          <div className="glass-card" style={{ padding: '1.8rem', position: 'sticky', top: '2.5rem' }}>
+            <h3 style={{ margin: '0 0 1.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <Activity size={16} /> Agentic Pipeline
+            </h3>
+            <div style={{ position: 'relative' }}>
+              {/* Vertical line connecting nodes */}
+              <div style={{ position: 'absolute', left: '21px', top: '20px', bottom: '30px', width: '2px', background: 'var(--border-color)', zIndex: 0 }} />
+              
+              {AGENTS.map((agent, idx) => {
+                const st = agentStates[idx];
+                const Icon = agent.icon;
+                const isSuspended = st === 'suspended';
+                const isActive = st === 'active' || isSuspended;
+                const isDone = st === 'done';
+                const isError = st === 'error';
+                const cColor = isDone || isActive ? (isSuspended ? 'var(--accent-orange)' : agent.color) : 'var(--text-secondary)';
+                
+                return (
+                  <div key={agent.id} style={{ display: 'flex', gap: '1.2rem', marginBottom: '1.8rem', position: 'relative', zIndex: 1, opacity: isDone || isActive ? 1 : 0.4 }}>
+                    {/* Node Icon */}
+                    <div style={{
+                      width: '44px', height: '44px', borderRadius: '50%', background: isDone ? `${agent.color}22` : isActive ? `${agent.color}33` : 'var(--card-bg)',
+                      border: `2px solid ${cColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                      boxShadow: isActive ? `0 0 15px ${agent.color}66` : 'none', transition: 'all 0.3s ease'
+                    }}>
+                      {isDone ? <CheckCircle size={20} color={agent.color} /> : isSuspended ? <AlertTriangle size={20} color="var(--accent-orange)" /> : isActive ? <Loader size={20} color={agent.color} style={{ animation: 'spin 1s linear infinite' }} /> : <Icon size={20} color="var(--text-secondary)" />}
+                    </div>
+                    {/* Details */}
+                    <div style={{ paddingTop: '0.4rem' }}>
+                      <div style={{ fontSize: '0.9rem', fontWeight: 700, color: cColor }}>{agent.name}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.3rem', lineHeight: 1.4 }}>{agent.desc}</div>
+                      {isSuspended && <div style={{ fontSize: '0.65rem', color: 'var(--accent-orange)', fontWeight: 800, marginTop: '0.4rem', background: 'rgba(245,158,11,0.1)', padding: '4px 8px', borderRadius: '4px', display: 'inline-block', letterSpacing: '0.05em' }}>WAITING IN ORCHESTRATOR</div>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            {/* Live Log */}
+            {logs.length > 0 && (
+              <div style={{ marginTop: '2rem', background: 'var(--panel-bg)', borderRadius: 10, padding: '1.2rem', border: '1px solid var(--border-color)', boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.1)' }}>
+                <div style={{ fontSize: '0.65rem', color: 'var(--accent-green)', marginBottom: '0.8rem', fontWeight: 800, letterSpacing: '0.1em' }}>▶ EXECUTION LOG</div>
+                <div ref={logsRef} style={{ maxHeight: 250, overflowY: 'auto', fontFamily: "'Fira Code', monospace" }}>
+                  {logs.map((l, i) => (
+                    <div key={i} style={{ fontSize: '0.7rem', color: l.type === 'error' ? 'var(--accent-red)' : l.type === 'done' ? 'var(--accent-green)' : l.type === 'start' ? 'var(--accent-blue)' : 'var(--text-secondary)', marginBottom: '0.3rem', lineHeight: 1.5 }}>
+                      <span style={{ opacity: 0.5, marginRight: 8 }}>[{l.t}]</span>{l.msg}
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+          </div>
 
-                <OrchestratorPanel jobKey={result.action_center_item_id} running={running} />
+          {/* Right Column: Evidence & Results */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            
+            {/* Evidence & Case Overview */}
+            <div className="glass-card" style={{ padding: '2rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h3 style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Active Investigation Context</h3>
+                <Badge color={CASE.color}>{CASE.badge.replace(/_/g, ' ')}</Badge>
+              </div>
+              <div style={{ display: 'flex', gap: '2rem', marginBottom: '2rem' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.4rem' }}>{CASE.case_id}</div>
+                  <div style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{CASE.description}</div>
+                </div>
+                <div style={{ textAlign: 'right', borderLeft: '1px solid var(--border-color)', paddingLeft: '2rem' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Exposure</div>
+                  <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--accent-red)', marginTop: '0.4rem' }}>${totalAmount.toLocaleString()}</div>
+                </div>
+              </div>
+              
+              {uploadedCase && (
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+                  <button onClick={clearUpload} style={{ background: 'var(--panel-bg)', border: '1px solid var(--border-color)', borderRadius: 6, padding: '6px 12px', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>✕ Clear Document Data</button>
+                </div>
+              )}
+            </div>
+
+            {/* Money Flow Graph */}
+            <div className="glass-card" style={{ padding: '2rem' }}>
+               <h3 style={{ margin: '0 0 1rem 0', color: 'var(--text-secondary)', fontSize: '0.75rem', letterSpacing: '0.05em' }}>
+              GLOBAL ASSET TRACING
+            </h3>
+            <AssetTrackingLedger transactions={CASE.transactions} running={running} done={result !== null} />
+          </div>
+
+            {/* Architecture SVG Panel */}
+            <div className="glass-card" style={{ padding: '2rem' }}>
+               <h3 style={{ margin: '0 0 1.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                Enterprise Architecture Routing
+              </h3>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <ArchDiagram />
               </div>
             </div>
 
-            <Collapse title="📝 Agent 6 — Llama 3.1 FinCEN SAR Narrative" accent="#60a5fa">
-              <pre style={{
-                whiteSpace: 'pre-wrap', fontFamily: "'Georgia', serif",
-                color: '#C9D5E8', fontSize: '0.88rem', lineHeight: 1.85,
-                margin: 0, background: 'rgba(0,0,0,0.3)', padding: '1.2rem',
-                borderRadius: 8, borderLeft: '3px solid #60a5fa',
-              }}>{result.sar_narrative}</pre>
-            </Collapse>
-
-            <Collapse title="📄 Agent 7 — FinCEN Form 111 JSON Payload" accent="#4ade80" defaultOpen={false}>
-              <pre style={{
-                background: '#090D12', color: '#4ade80', fontFamily: "'Fira Code', monospace",
-                fontSize: '0.76rem', padding: '1.2rem', borderRadius: 8, overflow: 'auto', maxHeight: 300, margin: 0,
-              }}>{JSON.stringify(result.fincen_form_111, null, 2)}</pre>
-            </Collapse>
-
-            <Collapse title="🛡️ Agent 8 — Audit Trail & UiPath Integration Evidence" accent="#f472b6" defaultOpen={false}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px,1fr))', gap: '0.7rem', fontSize: '0.82rem' }}>
-                {[
-                  { l: 'FinCEN Tracking ID', v: result.fincen_tracking_id, c: '#10B981' },
-                  { l: 'Action Center Task', v: `Job Suspended: ${result.action_center_item_id?.slice(0,12)}…`, c: '#FFB020' },
-                  { l: 'UiPath Process', v: 'agent_6_sar_signature_hitl', c: '#fa709a' },
-                  { l: 'HITL Pattern', v: 'LangGraph interrupt() → Orchestrator suspend', c: '#f59e0b' },
-                  { l: 'OFAC Source', v: result.sanctions_hits ? 'Real OFAC SDN API hit' : 'Clean — No OFAC match', c: result.sanctions_hits ? '#FF4D4D' : '#10B981' },
-                  { l: 'Statute', v: 'BSA 31 U.S.C. § 5318(g)', c: '#a78bfa' },
-                ].map((r, i) => (
-                  <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 8, padding: '0.75rem' }}>
-                    <div style={{ fontSize: '0.68rem', color: '#4B5563', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{r.l}</div>
-                    <div style={{ fontWeight: 700, color: r.c, marginTop: 3, fontSize: '0.83rem' }}>{r.v}</div>
-                  </div>
-                ))}
+            {/* Error Message */}
+            {error && (
+              <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid var(--accent-red)', borderRadius: 12, padding: '1.5rem', color: 'var(--accent-red)' }}>
+                <AlertTriangle size={18} style={{ display: 'inline', marginRight: 8 }} />
+                <strong>Backend Error:</strong> {error}
               </div>
-            </Collapse>
+            )}
+
+            {/* Results Bento Box */}
+            {result && (
+              <div style={{ animation: 'fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1)' }}>
+                <div className="glass-card" style={{ padding: '2rem', background: 'linear-gradient(135deg, rgba(16,185,129,0.08), rgba(14,165,233,0.03))', border: '1px solid var(--accent-green)' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '2.5rem', alignItems: 'center' }}>
+                    <RiskGauge score={result.final_risk_score} color={riskColor} />
+                    
+                    <div>
+                      <h2 style={{ margin: '0 0 1.5rem', display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--accent-green)', fontSize: '1.6rem' }}>
+                        <CheckCircle size={28} /> Investigation Complete
+                      </h2>
+                      
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.2rem', marginBottom: '1.5rem' }}>
+                        <div style={{ background: 'var(--panel-bg)', borderRadius: 10, padding: '1rem', border: '1px solid var(--border-color)' }}>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>FinCEN Tracking ID</div>
+                          <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--accent-cyan)', marginTop: '0.4rem' }}>{result.fincen_tracking_id}</div>
+                        </div>
+                        <div style={{ background: 'var(--panel-bg)', borderRadius: 10, padding: '1rem', border: '1px solid var(--border-color)' }}>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Detection Pattern</div>
+                          <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--accent-blue)', marginTop: '0.4rem' }}>{result.pattern_name}</div>
+                        </div>
+                        <div style={{ background: 'var(--panel-bg)', borderRadius: 10, padding: '1rem', border: '1px solid var(--border-color)' }}>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>OFAC Screening</div>
+                          <div style={{ fontSize: '1rem', fontWeight: 800, color: result.sanctions_hits ? 'var(--accent-red)' : 'var(--accent-green)', marginTop: '0.4rem' }}>
+                            {result.sanctions_hits ? '🚨 SANCTIONS HIT' : '✅ Clean Profile'}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.2rem', marginBottom: '1.5rem' }}>
+                        <div style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.1), rgba(139,92,246,0.02))', borderRadius: 10, padding: '1rem', border: '1px solid rgba(139,92,246,0.3)' }}>
+                          <div style={{ fontSize: '0.7rem', color: '#A78BFA', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: 6 }}><Database size={12}/> UiPath Data Service</div>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '0.4rem' }}>
+                            ✅ Entity Records Synced<br/>
+                            ✅ SAR Payload Persisted
+                          </div>
+                        </div>
+                        <div style={{ background: 'linear-gradient(135deg, rgba(236,72,153,0.1), rgba(236,72,153,0.02))', borderRadius: 10, padding: '1rem', border: '1px solid rgba(236,72,153,0.3)' }}>
+                          <div style={{ fontSize: '0.7rem', color: '#F472B6', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: 6 }}><Share2 size={12}/> UiPath Integration Service</div>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '0.4rem' }}>
+                            🎫 Jira Ticket: AML-{result.fincen_tracking_id?.split('-')[1] || '4921'}<br/>
+                            💬 Slack Alert: #aml-escalations
+                          </div>
+                        </div>
+                      </div>
+
+                      <OrchestratorPanel jobKey={result.action_center_item_id} running={running} />
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '2rem', display: 'grid', gridTemplateColumns: '1fr', gap: '2rem' }}>
+                  <Collapse title="📝 View FinCEN SAR Narrative (Agent 6)" accent="var(--accent-blue)">
+                    <pre style={{
+                      whiteSpace: 'pre-wrap', fontFamily: "'Georgia', serif",
+                      color: 'var(--text-primary)', fontSize: '0.95rem', lineHeight: 1.8,
+                      margin: 0, background: 'var(--panel-bg)', padding: '2rem',
+                      borderRadius: 10, borderLeft: '4px solid var(--accent-blue)',
+                    }}>{result.sar_narrative}</pre>
+                  </Collapse>
+
+                  <Collapse title="📄 View FinCEN Form 111 JSON Data (Agent 7)" accent="var(--accent-green)" defaultOpen={false}>
+                    <pre style={{
+                      background: 'var(--sar-bg)', color: '#4ade80', fontFamily: "'Fira Code', monospace",
+                      fontSize: '0.8rem', padding: '2rem', borderRadius: 10, overflow: 'auto', maxHeight: 400, margin: 0,
+                    }}>{JSON.stringify(result.fincen_form_111, null, 2)}</pre>
+                  </Collapse>
+                </div>
+                
+                <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', gap: '1rem' }}>
+                  <button onClick={handleDownloadReport}
+                    style={{
+                      background: 'linear-gradient(135deg, var(--accent-green) 0%, #059669 100%)',
+                      border: 'none', borderRadius: 12, padding: '16px 32px',
+                      color: '#fff', fontWeight: 800, fontSize: '1.1rem',
+                      cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 10,
+                      boxShadow: '0 8px 25px rgba(16,185,129,0.3)', transition: 'all 0.2s', textTransform: 'uppercase', letterSpacing: '0.05em',
+                    }}>
+                    <FileText size={20} /> Download Final SAR Report
+                  </button>
+                  <button onClick={handleClipboardAI}
+                    style={{
+                      background: 'linear-gradient(135deg, var(--accent-orange) 0%, #F59E0B 100%)',
+                      border: 'none', borderRadius: 12, padding: '16px 32px',
+                      color: '#fff', fontWeight: 800, fontSize: '1.1rem',
+                      cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 10,
+                      boxShadow: '0 8px 25px rgba(245,158,11,0.3)', transition: 'all 0.2s', textTransform: 'uppercase', letterSpacing: '0.05em',
+                    }}>
+                    <Copy size={20} /> Copy to Clipboard AI
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
+      </div>
+      )}
       </div>
 
       <style>{`
         @keyframes spin    { from{transform:rotate(0deg)}   to{transform:rotate(360deg)} }
-        @keyframes fadeIn  { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes fadeIn  { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
         @keyframes flowDash{ from{stroke-dashoffset:24}     to{stroke-dashoffset:0} }
         * { box-sizing: border-box; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
         button { font-family: inherit; }
       `}</style>
+
+      {/* Render Autopilot Widget when a case is loaded or completed */}
+      {result && <AutopilotWidget caseData={result} />}
     </div>
   );
 }
+

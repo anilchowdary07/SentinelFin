@@ -57,8 +57,8 @@ class PatternDetectionAgent:
         print(f"Transactions to analyze: {len(transactions)}")
         print(f"{'='*50}")
         
-        api_key = os.getenv("AWS_BEDROCK_KEY")
-        llm = get_bedrock_llm(api_key, temperature=0.1) if api_key else None
+        # boto3 automatically picks up ~/.aws/credentials
+        llm = get_bedrock_llm("dummy_key", temperature=0.1)
         
         if not HAS_LANGCHAIN or not llm:
             print("[AGENT 3] [WARNING] AWS_BEDROCK_KEY not found or dependencies missing. Forcing fallback mode for demo purposes.")
@@ -137,7 +137,8 @@ The function must return a score > 80 if the pattern heavily indicates {alert_ty
                 # Self-Reflection Step: Append the error to the message history and ask the LLM to fix it
                 if attempt < max_retries - 1:
                     print(f"[AGENT 3 💡 REFLECTION] Asking LLM to debug and regenerate code...")
-                    messages.append(response) # Add the assistant's bad code to history
+                    if 'response' in locals():
+                        messages.append(response) # Add the assistant's bad code to history if it exists
                     messages.append(HumanMessage(content=f"The code you generated failed with this error:\n{str(e)}\nPlease fix the error and return ONLY the corrected python code block."))
                 else:
                     print(f"[AGENT 3] 🚨 CRITICAL: Max retries exceeded. Falling back to rule-based detector.")
