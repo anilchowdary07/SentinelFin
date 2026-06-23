@@ -750,8 +750,8 @@ export default function App() {
 TRACKING_ID:    ${result.fincen_tracking_id}
 RISK_SCORE:     ${result.final_risk_score}/100
 PATTERN:        ${result.pattern_name}
-SAR_SUBJECT:    ${form.subject_information?.last_name || 'UNKNOWN'}
-SAR_AMOUNT:     $${form.suspicious_activity_information?.total_amount || 0}
+SAR_SUBJECT:    ${form.part_1_subject_information?.primary_subject || 'UNKNOWN'}
+SAR_AMOUNT:     $${form.part_2_suspicious_activity_information?.amount_involved || 0}
 SAR_NARRATIVE:  ${result.sar_narrative.split('\n')[0]}...
 ========================================
 READY FOR LEGACY TERMINAL PASTE

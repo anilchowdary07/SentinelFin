@@ -2,6 +2,8 @@
 
 SentinelFin is a prototype Anti-Money Laundering (AML) application. It demonstrates how to orchestrate a complex AI investigation workflow while deeply integrating with the UiPath Automation Cloud for data persistence and human-in-the-loop (HITL) review.
 
+> **🏅 Hackathon Track:** This project is submitted under the **UiPath Maestro BPMN Track**. The top-level governance is managed by a UiPath Maestro BPMN process, which delegates heavy unstructured cognitive reasoning to our external LangGraph AI engine, perfectly demonstrating the blend of UiPath-native orchestration with external LLM agents.
+
 ---
 
 ## 💡 Inspiration
@@ -41,6 +43,9 @@ graph TD
 ```
 
 ## ⚙️ How we built it (Tech Stack & Integrations)
+
+### 🏆 Bonus: Built with UiPath for Coding Agents
+**We are claiming the Coding Agent bonus points!** This entire 8-Agent LangGraph architecture, the React dashboard, the live Server-Sent Events (SSE) streaming, and the live OAuth 2.0 REST API connections to UiPath Cloud were collaboratively architected and built using **UiPath for Coding Agents (Gemini/Antigravity CLI)**. The coding agent acted as our co-pilot, generating the complex FastAPI asynchronous routing and helping us navigate the UiPath Orchestrator REST API documentation.
 
 ### The Core Stack
 - **Backend:** Python, FastAPI, LangGraph (Multi-Agent State Machine)

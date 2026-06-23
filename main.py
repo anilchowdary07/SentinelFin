@@ -429,8 +429,15 @@ async def run_pipeline_stream(req: CaseRequest) -> AsyncGenerator[str, None]:
 
     # === NODE 9: DATA SERVICE ===
     yield sse("agent_start", {"agent": 9, "name": "Data Service (Sync)"})
-    await asyncio.sleep(1.5)
-    yield sse("agent_done", {"agent": 9, "name": "Data Service (Sync)", "detail": "Extracted Data Synced"})
+    
+    # ── Call real Data Service API ──────────────────────────────────────────────
+    from integrations.uipath_api import UiPathAPI
+    api_success = UiPathAPI.push_to_data_service(state.get("case_data", {}))
+    
+    if api_success:
+        yield sse("agent_done", {"agent": 9, "name": "Data Service (Sync)", "detail": "Extracted Data Synced to UiPath Cloud"})
+    else:
+        yield sse("agent_done", {"agent": 9, "name": "Data Service (Sync)", "detail": "Data Service Push Simulated (Schema Missing or API Error)"})
 
     # === NODE 10: INTEGRATION SERVICE ===
     yield sse("agent_start", {"agent": 10, "name": "Integration Service (Jira & Slack)"})

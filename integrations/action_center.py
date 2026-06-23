@@ -1,19 +1,10 @@
 """
 integrations/action_center.py
 
-Creates a real UiPath Action Center Task by triggering the agent_6_sar_signature_hitl
-process in Orchestrator. This process uses LangGraph interrupt() to genuinely
-suspend the job and create a task for the BSA Officer in Action Center.
+Creates a real UiPath Action Center Task using the UiPath Automation Cloud REST API.
 """
 
-import subprocess
-import json
-import datetime
-import os
-
-PROCESS_KEY  = "129A8171-C1EC-46F4-BC82-9E5E0C564EFF" # agent_6_sar_signature_hitl
-FOLDER_PATH = "anilchowdary5072@gmail.com's workspace"
-
+from integrations.uipath_api import UiPathAPI
 
 def create_sar_review_task(
     case_id: str,
@@ -24,53 +15,33 @@ def create_sar_review_task(
     fincen_tracking_id: str,
 ) -> dict:
     """
-    Creates a real UiPath Action Center task by triggering the agent_6_sar_signature_hitl
-    Coded Agent process in Orchestrator. The process uses LangGraph's interrupt()
-    to natively suspend the job and create an Action Center task for the BSA Officer.
+    Creates a real UiPath Action Center External Task via Orchestrator REST API.
     """
-    # Build narrative with rich context for the Action Center reviewer
-    enriched_narrative = (
-        f"**RISK SCORE:** {risk_score}/100\n"
-        f"**SANCTIONS HIT:** {sanctions_hits}\n"
-        f"**SLA:** {sla_status}\n"
-        f"**FINCEN ID:** {fincen_tracking_id}\n\n"
-        f"{sar_narrative}"
-    )
-
-    input_args = {
+    # Build data object for the Action Center reviewer
+    enriched_data = {
         "case_id": case_id,
-        "sar_narrative": enriched_narrative[:5000] # Safe limit
+        "risk_score": risk_score,
+        "sanctions_hits": sanctions_hits,
+        "sla_status": sla_status,
+        "fincen_tracking_id": fincen_tracking_id,
+        "sar_narrative": sar_narrative[:5000] # Safe limit
     }
 
     try:
-        result = subprocess.run(
-            [
-                "uip", "orchestrator", "jobs", "start",
-                PROCESS_KEY,
-                "--folder-path", FOLDER_PATH,
-                "--input-arguments", json.dumps(input_args),
-            ],
-            capture_output=True,
-            text=True,
-            timeout=30,
+        task_id = UiPathAPI.create_action_center_task(
+            title=f"SAR Review Required - {fincen_tracking_id}",
+            data=enriched_data
         )
 
-        output = result.stdout.strip()
-        if result.returncode == 0:
-            data = json.loads(output) if output.startswith("{") else {}
-            jobs = data.get("Data", {}).get("Jobs", [])
-            job_key = jobs[0].get("Key") if jobs else "created"
-            
-            print(f"[ACTION CENTER] ✅ Job triggered for Action Center task. Job Key: {job_key}")
+        if task_id:
             return {
                 "success":       True,
-                "queue_item_id": str(job_key),
-                "queue_name":    "Action Center (Job Suspended)",
-                "message":       f"Real Action Center Task created via Job Suspension. Job: {job_key}",
+                "queue_item_id": task_id,
+                "queue_name":    "Action Center (REST API)",
+                "message":       f"Real Action Center Task created via REST API. Task ID: {task_id}",
             }
         else:
-            print(f"[ACTION CENTER] ⚠️  Exit {result.returncode}: {output[:200]}")
-            return {"success": False, "queue_item_id": "err", "message": output[:200]}
+            return {"success": False, "queue_item_id": "err", "message": "Failed to create task. Check API credentials or Orchestrator folders."}
 
     except Exception as e:
         print(f"[ACTION CENTER] ❌ {e}")
