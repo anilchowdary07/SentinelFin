@@ -39,9 +39,10 @@ from agents.agent_5_regulatory_intelligence.agent import RegulatoryIntelligenceA
 from agents.agent_6_sar_narrative_writer.agent  import SARNarrativeWriterAgent
 from agents.agent_7_sar_form_population.agent   import SARFormPopulationAgent
 from agents.agent_8_submission_audit.agent      import SubmissionAuditAgent
-from integrations.action_center import create_sar_review_task
 
-# ── FastAPI ────────────────────────────────────────────────────────────────────
+
+
+# ── Health check ────────────────────────────────────────────────────────────────────
 app = FastAPI(title="SentinelFin — 8-Agent LangGraph + UiPath Maestro")
 
 app.add_middleware(
@@ -208,23 +209,17 @@ def node_form_populator(state: AgentState) -> AgentState:
 
 
 def node_submission_audit(state: AgentState) -> AgentState:
-    print("\n[NODE 8 — AUDIT] Generating audit trail + UiPath Action Center task...")
+    print("\n[NODE 8 — AUDIT] Generating audit trail (Governance passed back to Maestro)...")
     updated = SubmissionAuditAgent.run(state["case_data"])
     state["case_data"] = updated
     audit = updated.get("submission_audit", {})
     state["fincen_tracking_id"] = audit.get("fincen_tracking_id", "UNKNOWN")
 
-    # ── Create real Action Center queue item for BSA Officer review ────────────
-    ac_result = create_sar_review_task(
-        case_id=state["case_id"],
-        risk_score=state["risk_score"],
-        sar_narrative=state["sar_narrative"],
-        sanctions_hits=state["sanctions_hits"],
-        sla_status=state["sla_status"],
-        fincen_tracking_id=state["fincen_tracking_id"],
-    )
-    state["action_center_item_id"] = ac_result.get("queue_item_id") or "N/A"
-    print(f"[NODE 8] Tracking ID: {state['fincen_tracking_id']}, Action Center item: {state['action_center_item_id']}")
+    # ── GOVERNANCE FIX: Removed autonomous push to Action Center ────────────
+    # The LangGraph pipeline no longer creates the Action Center task directly.
+    # It simply returns the payload, and the Maestro Case will handle the UI routing.
+    state["action_center_item_id"] = "PENDING_MAESTRO_ROUTING"
+    print(f"[NODE 8] Tracking ID: {state['fincen_tracking_id']}, Action Center Routing: Delegated to Maestro")
     return state
 
 
@@ -253,6 +248,50 @@ investigation_graph = workflow.compile()
 
 
 # ── SSE streaming endpoint ─────────────────────────────────────────────────────
+@app.post("/api/maestro/investigate")
+async def maestro_investigate(req: CaseRequest):
+    """
+    Synchronous endpoint for the UiPath Maestro Service Task.
+    Runs the entire LangGraph pipeline and returns the structured JSON payload.
+    WARNING: Depending on LLM latency, this could trigger a timeout in Maestro.
+    If timeout occurs (>60s), this architecture must be refactored to an async webhook pattern.
+    """
+    print(f"\n[MAESTRO CASE INITIATED] Processing Case {req.case_id} synchronously...")
+    
+    initial_state: AgentState = {
+        "case_id":              req.case_id,
+        "alert_type":           req.alert_type,
+        "transactions":         req.transactions,
+        "resilience_mode":      req.resilience_mode,
+        "case_data":            {},
+        "risk_score":           0,
+        "sanctions_hits":       False,
+        "sla_status":           "",
+        "days_remaining":       0,
+        "sar_narrative":        "",
+        "fincen_form_111":      {},
+        "fincen_tracking_id":   "",
+        "entities":             [],
+        "network_depth":        0,
+        "pattern_name":         "",
+        "action_center_item_id": ""
+    }
+
+    # Run the graph synchronously
+    try:
+        final_state = await investigation_graph.ainvoke(initial_state)
+        return JSONResponse(content={
+            "case_id": final_state.get("case_id"),
+            "risk_score": final_state.get("risk_score"),
+            "sanctions_hits": final_state.get("sanctions_hits"),
+            "sar_narrative": final_state.get("sar_narrative"),
+            "fincen_form_111": final_state.get("fincen_form_111"),
+            "status": "COMPLETED"
+        })
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 async def run_pipeline_stream(req: CaseRequest) -> AsyncGenerator[str, None]:
     """Runs the pipeline in a thread and streams SSE events to the client."""
 

@@ -9,3 +9,4 @@ flask
 streamlit
 fastapi
 uvicorn
+pdfplumber
