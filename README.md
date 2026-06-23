@@ -2,7 +2,7 @@
 
 SentinelFin is a prototype Anti-Money Laundering (AML) application. It demonstrates how to orchestrate a complex AI investigation workflow while deeply integrating with the UiPath Automation Cloud for data persistence and human-in-the-loop (HITL) review.
 
-> **🏅 Hackathon Track:** This project is submitted under **Track 2: UiPath Maestro BPMN**. SentinelFin models and runs an end-to-end AML compliance process using BPMN 2.0. Because our investigation follows a predictable sequence (Ingestion ➔ AI Analysis ➔ Human Review), a Maestro BPMN workflow acts as the top-level orchestrator. It seamlessly coordinates humans, external LangGraph agents, and UiPath APIs through a defined flow with clear tasks, decisions, and handoffs—ensuring the right actor does the right task at the right time.
+> **🏅 Hackathon Track:** This project is submitted under **Track 1: UiPath Maestro Case**. SentinelFin orchestrates a dynamic, exception-heavy AML investigation using UiPath case management capabilities. Because financial crime investigations have unpredictable paths and require moving work through distinct stages (Intake ➔ Investigation ➔ SAR Filing), a Maestro Case acts as the top-level orchestrator. It seamlessly manages handoffs between our external LangGraph AI agents, enterprise UiPath APIs, and human BSA Officers—keeping humans in charge at key decision points.
 
 ---
 
@@ -18,34 +18,36 @@ SentinelFin ingests raw transactional data, processes it through specialized AI 
    - **Pattern Detection:** Analyzes transactions for known money laundering typologies (e.g., Layering, Shell Companies).
    - **Narrative & Form Generation:** If the risk is high, the AI drafts a SAR narrative and maps the data strictly to the FinCEN Form 111 JSON schema.
 3. **Real-time UI Updates:** As each agent completes its task, the backend streams the state to the frontend using Server-Sent Events (SSE), updating the dashboard in real-time.
-4. **UiPath Handoff:** Once the AI completes the investigation, it securely pushes the data to UiPath for enterprise auditing and human approval.
+4. **Governed Handoff:** Once the AI completes the investigation, it returns the structured payload back to the **UiPath Maestro Case**. Maestro then natively enforces the governance rules, routing the case to Action Center for human approval and pushing the audit trail to Data Service.
 
 ## 🏗️ Architecture Diagram
 
 ```mermaid
 graph TD
-    A[React Dashboard] -->|Uploads Evidence / Scenarios| B(FastAPI Backend)
-    B <-->|SSE Streaming| A
-    
-    subgraph AI Engine
-        B -->|Invokes| C{LangGraph Pipeline}
-        C -->|Calls LLM| D[AWS Bedrock Llama 3]
-        D --> C
-        C -->|Agent 1-5| E[Investigation & Triage]
-        C -->|Agent 6-8| F[SAR Narrative & Form 111]
+    subgraph UiPath Enterprise Governance
+        M_Case{Maestro Case: AML Alert}
+        M_Case -->|Gate 1: Investigation| F_API
+        M_Case -->|Gate 2: BSA Sign-off| M_Action[Action Center Task]
+        M_Case -->|Audit Persistence| M_Data[(UiPath Data Service)]
+        
+        M_Action --> J((Compliance Officer))
     end
     
-    F -->|OAuth 2.0 REST API| G[(UiPath Data Service)]
-    F -->|OAuth 2.0 REST API| H[UiPath Action Center]
-    F -->|HTTP Webhook| I[Slack Notifications]
+    subgraph External Agentic Specialist
+        F_API(FastAPI LangGraph Endpoint)
+        F_API -->|Calls LLM| D[AWS Bedrock Llama 3]
+        D --> F_API
+        F_API -->|Streams live thought process| A[React Dashboard]
+    end
     
-    H -->|Manual Review| J((Compliance Officer))
+    %% The governed relationship: Maestro initiates, FastAPI returns.
+    F_API -->|Returns SAR JSON| M_Case
 ```
 
 ## ⚙️ How we built it (Tech Stack & Integrations)
 
 ### 🏆 Bonus: Built with UiPath for Coding Agents
-**We are claiming the Coding Agent bonus points!** This entire 8-Agent LangGraph architecture, the React dashboard, and the live OAuth 2.0 REST API connections to UiPath Cloud were collaboratively architected and built using **UiPath for Coding Agents (Antigravity CLI)**. The coding agent acted as our co-pilot, generating the complex FastAPI asynchronous routing and perfectly demonstrating how to **blend UiPath-native orchestration with external agents** to solve complex AML compliance problems.
+**We are claiming the Coding Agent bonus points!** Please see our dedicated [CODING_AGENTS.md](./CODING_AGENTS.md) file for the complete authorship table and concrete evidence of how we used Antigravity CLI to collaboratively build this governed architecture.
 
 ### The Core Stack
 - **Backend:** Python, FastAPI, LangGraph (Multi-Agent State Machine)
