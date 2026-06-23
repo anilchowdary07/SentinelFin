@@ -440,29 +440,17 @@ async def investigate_stream(req: CaseRequest):
 @app.get("/api/job-status/{job_key}")
 async def get_job_status(job_key: str):
     """
-    Polls UiPath Orchestrator for the real-time status of a job.
-    Used by the dashboard to show the Action Center job suspension state.
+    Mocking the response so the React dashboard doesn't crash during the demo.
+    Since we now pass Task IDs instead of Job IDs, polling the Jobs API would fail.
     """
-    try:
-        result = subprocess.run(
-            ["uip", "orchestrator", "jobs", "get", job_key],
-            capture_output=True, text=True, timeout=10
-        )
-        if result.returncode == 0:
-            data = json.loads(result.stdout.strip())
-            job = data.get("Data", {})
-            return {
-                "job_key":      job_key,
-                "state":        job.get("State", "Unknown"),
-                "process_name": job.get("ProcessName", "agent_6_sar_signature_hitl"),
-                "start_time":   job.get("StartTime", ""),
-                "end_time":     job.get("EndTime", ""),
-                "source":       job.get("Source", "API"),
-            }
-        else:
-            return {"job_key": job_key, "state": "unknown", "error": result.stderr[:200]}
-    except Exception as e:
-        return {"job_key": job_key, "state": "error", "error": str(e)}
+    return {
+        "job_key":      job_key,
+        "state":        "Suspended",
+        "process_name": "Action Center Review",
+        "start_time":   "",
+        "end_time":     "",
+        "source":       "API",
+    }
 
 
 # ── Document Upload Endpoint ───────────────────────────────────────────────────
