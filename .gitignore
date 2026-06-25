@@ -4,3 +4,12 @@ __pycache__/
 .env
 .pytest_cache/
 .coverage
+docs/*script*.md
+docs/PRESENTATION_SCRIPT.md
+docs/DEVPOST_SUBMISSION.md
+docs/PRODUCT_FEEDBACK.md
+ngrok.log
+swagger.json
+metadata.xml
+scripts/generate_demo_files.py
+scripts/generate_massive_pdfs.py
