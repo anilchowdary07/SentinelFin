@@ -1,0 +1,13 @@
+{1:F01BANKDEF0AXXX0000000000}{2:I103BANKXYZ0XXXXN}{4:
+:20:TXN-998811
+:32A:231025USD50000,
+:50K:/123456789
+Global Trade Corp
+123 Business Ave
+New York, NY 10001
+:59:/987654321
+Shell Co Holdings
+PO Box 1234
+Grand Cayman, KY1-1102
+:70:Invoice Payment for Consulting Services
+-}

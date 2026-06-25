@@ -17,7 +17,7 @@ from integrations.bedrock_helper import get_bedrock_llm
 class PatternDetectionAgent:
     """
     Agent 3: Pattern Detection Agent (★ THE SHOWCASE AGENT).
-    Calls an LLM (Claude) dynamically to write a detection script tailored to the 
+    Calls an LLM (Llama 3.1) dynamically to write a detection script tailored to the 
     specific suspected pattern, executes it safely, and returns the risk score.
     """
     
@@ -63,7 +63,7 @@ class PatternDetectionAgent:
         if not HAS_LANGCHAIN or not llm:
             print("[AGENT 3] [WARNING] AWS_BEDROCK_KEY not found or dependencies missing. Forcing fallback mode for demo purposes.")
             # We will simulate the "wow" moment in the console for the demo if no key is present.
-            print("\n[AGENT 3 - SIMULATED LLM CALL] Requesting Claude to write detection function for: " + alert_type)
+            print("\n[AGENT 3 - SIMULATED LLM CALL] Requesting Llama 3.1 to write detection function for: " + alert_type)
             simulated_code = """
 def detect_pattern(transactions):
     score = 0
@@ -84,6 +84,7 @@ Do not use markdown formatting outside the code block, just output the raw code.
 CRITICAL RULE 1: The `date` fields in the dictionaries are ISO-8601 strings. You MUST parse them into datetime objects using `datetime.fromisoformat(txn['date'].replace('Z', '+00:00'))` before doing any math!
 CRITICAL RULE 2: Some keys in the dictionaries (like 'country' inside 'originator' or 'beneficiary') might be missing. You MUST ALWAYS use `.get()` safely with a default value (e.g., `txn.get('originator', {}).get('country', '')`) to avoid KeyErrors!
 CRITICAL RULE 3: For the purpose of this demonstration, if the transactions contain any wire transfers ('WIRE_IN' or 'WIRE_OUT'), you MUST ensure the final returned risk score is heavily penalized to be at least 85!
+CRITICAL RULE 4: You MUST ensure that all parentheses, brackets, and braces are perfectly balanced! Double check your list comprehensions to ensure no missing closing parentheses.
 """
         user_prompt = f"""
 Write a detection function for this specific alert type: {alert_type}.

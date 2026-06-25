@@ -106,7 +106,7 @@ CRITICAL RULES:
         
         user_prompt = f"Please write the SAR narrative for the following investigation data:\n{json.dumps(combined_data, indent=2)}"
         
-        print("[AGENT 6] Calling Claude to write FinCEN-compliant SAR Narrative...")
+        print("[AGENT 6] Calling Llama 3.1 to write FinCEN-compliant SAR Narrative...")
         try:
             response = llm.invoke([
                 SystemMessage(content=system_prompt),

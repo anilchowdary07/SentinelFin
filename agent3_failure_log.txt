@@ -1,1 +1,7 @@
-Failed to execute code for SUSPECTED_LAYERING after 2 attempts: Invalid isoformat string: ''
+Failed to execute code for DOCUMENT_UPLOAD after 2 attempts: closing parenthesis ']' does not match opening parenthesis '(' (<string>, line 11)
+Failed to execute code for DOCUMENT_UPLOAD after 2 attempts: closing parenthesis ']' does not match opening parenthesis '(' (<string>, line 11)
+Failed to execute code for DOCUMENT_UPLOAD after 2 attempts: closing parenthesis ']' does not match opening parenthesis '(' (<string>, line 11)
+Failed to execute code for DOCUMENT_UPLOAD after 2 attempts: closing parenthesis ']' does not match opening parenthesis '(' (<string>, line 11)
+Failed to execute code for DOCUMENT_UPLOAD after 2 attempts: closing parenthesis ']' does not match opening parenthesis '(' (<string>, line 11)
+Failed to execute code for DOCUMENT_UPLOAD after 2 attempts: closing parenthesis ']' does not match opening parenthesis '(' (<string>, line 11)
+Failed to execute code for SUSPECTED_LAYERING after 2 attempts: '(' was never closed (<string>, line 54)

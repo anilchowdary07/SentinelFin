@@ -774,13 +774,12 @@ READY FOR LEGACY TERMINAL PASTE
     setRunning(true); setResult(null); setError(null); setLogs([]);
     setAgentStates(AGENTS.map(() => 'idle'));
     addLog(`🚀 Starting investigation: ${CASE.label}`, 'info');
-    addLog('🔗 Connecting to FastAPI backend (port 8000)...', 'info');
-
+    addLog('🔗 System Connected to Python API (Passive Monitor Mode)', 'info');
+    addLog('⏳ PLEASE CLICK "RUN" IN UIPATH MAESTRO NOW TO BEGIN THE ORCHESTRATION...', 'start');
     try {
-      const resp = await fetch('http://localhost:8000/api/investigate/stream', {
-        method: 'POST',
+      const resp = await fetch('http://localhost:8000/api/monitor', {
+        method: 'GET',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...CASE, resilience_mode: resilience }),
       });
       if (!resp.ok) throw new Error(`Backend returned HTTP ${resp.status}`);
 

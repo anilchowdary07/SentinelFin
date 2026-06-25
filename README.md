@@ -13,35 +13,62 @@ Banks spend billions manually investigating AML alerts. A typical compliance ana
 SentinelFin ingests raw transactional data, processes it through specialized AI agents to determine risk, and prepares a SAR for final human review.
 
 1. **Data Ingestion:** The user uploads raw evidence (e.g., a PDF bank statement or CSV) via the React dashboard.
-2. **AI Processing (LangGraph):** The data is routed to a FastAPI backend where an 8-node LangGraph pipeline processes the case:
-   - **Triage & Sanctions:** Checks entities against risk profiles.
-   - **Pattern Detection:** Analyzes transactions for known money laundering typologies (e.g., Layering, Shell Companies).
-   - **Narrative & Form Generation:** If the risk is high, the AI drafts a SAR narrative and maps the data strictly to the FinCEN Form 111 JSON schema.
-3. **Real-time UI Updates:** As each agent completes its task, the backend streams the state to the frontend using Server-Sent Events (SSE), updating the dashboard in real-time.
-4. **Governed Handoff:** Once the AI completes the investigation, it returns the structured payload back to the **UiPath Maestro Case**. Maestro then natively enforces the governance rules, routing the case to Action Center for human approval and pushing the audit trail to Data Service.
+2. **AI Processing (The 8-Agent Investigation Team):** The data is routed to a FastAPI backend where a massive multi-agent pipeline processes the case:
+   - **Agent 1 (Transaction Context):** Ingests the raw transaction JSON payload (acting as a mock database lookup) and normalizes the data for the investigation.
+   - **Agent 2 (Sanctions & PEP Screener):** Cross-references the originator and beneficiary names against OFAC lists, FBI Most Wanted databases, and global PEP (Politically Exposed Persons) registries to detect known criminals.
+   - **Agent 3 (Pattern Detection - Coding Agent):** The centerpiece of the AI. It calls Llama 3.1 dynamically to write a custom Python detection script on the fly to detect specific layering typologies, executes the code safely in an isolated environment, and calculates a mathematical risk score.
+   - **Agent 4 (Network Investigation):** Maps the relationships between entities to uncover hidden offshore shell company networks and multi-hop transactions.
+   - **Agent 5 (Regulatory Intelligence):** Determines the exact FinCEN SLA reporting deadlines (e.g., 30-day filing limit) based on the alert type and global jurisdiction.
+   - **Agent 6 (SAR Narrative Writer):** Uses Llama 3.1 70B to draft a highly professional, multi-page FinCEN-compliant Suspicious Activity Report (SAR) narrative based on the findings of Agents 1-5.
+   - **Agent 7 (SAR Form Population):** Structurally maps the unstructured SAR data directly into the strict JSON schema required by the FinCEN Form 111 e-filing system.
+   - **Agent 8 (Submission):** The final orchestrator that generates the audit trail, synchronizes structured entity data to UiPath Data Service for enterprise record-keeping, and dispatches the final approval alerts to enterprise communication channels (Slack and Jira).
+3. **Real-time UI Updates:** As the Python backend executes these 8 high-level stages, it streams the state to the frontend using Server-Sent Events (SSE), updating the dashboard in real-time.
+4. **Governed Handoff:** The process is entirely governed by the **UiPath Maestro Case**. Maestro natively enforces the governance rules, routing the case to Action Center for human approval at Gate 1 and Gate 2, ensuring humans are always in control of the AI.
 
 ## 🏗️ Architecture Diagram
 
 ```mermaid
 graph TD
-    subgraph UiPath Enterprise Governance
-        M_Case{Maestro Case: AML Alert}
-        M_Case -->|Gate 1: Investigation| F_API
-        M_Case -->|Gate 2: BSA Sign-off| M_Action[Action Center Task]
-        M_Case -->|Audit Persistence| M_Data[(UiPath Data Service)]
+    subgraph UiPath Enterprise Governance - Maestro
+        M_Start((Start Alert))
+        M_Start --> A1[Agent 1: Initial Investigation]
+        A1 --> G1{Gate 1: Triage Analyst}
         
-        M_Action --> J((Compliance Officer))
+        G1 -->|Approve| A4[Agent 4: Deep AI Investigation]
+        G1 -->|Reject| M_End((End))
+        
+        A4 --> G2{Gate 2: BSA Officer}
+        G2 -->|Approve| A8[Agent 8: Final Sync]
+        A8 --> M_End
     end
     
-    subgraph External Agentic Specialist
-        F_API(FastAPI LangGraph Endpoint)
-        F_API -->|Calls LLM| D[AWS Bedrock Llama 3]
-        D --> F_API
-        F_API -->|Streams live thought process| A[React Dashboard]
+    subgraph External Agentic Backend (Python)
+        F_API1(FastAPI: Part 1)
+        F_API2(FastAPI: Part 2)
+        F_API3(FastAPI: Part 3)
+        
+        LLM[AWS Bedrock Llama 3.1]
+        
+        F_API1 -.->|Calls LLM| LLM
+        F_API2 -.->|Calls LLM| LLM
     end
     
-    %% The governed relationship: Maestro initiates, FastAPI returns.
-    F_API -->|Returns SAR JSON| M_Case
+    subgraph Custom UI (React)
+        Dash[SentinelFin Passive Dashboard]
+        HTML_Report[Dedicated /report Document]
+    end
+    
+    %% Maestro HTTP Connections
+    A1 ==>|HTTP POST| F_API1
+    A4 ==>|HTTP POST| F_API2
+    A8 ==>|HTTP POST| F_API3
+    
+    %% UI and Human Connections
+    F_API1 -.->|Streams real-time SSE| Dash
+    F_API2 -.->|Streams real-time SSE| Dash
+    F_API3 -.->|Streams 100% Complete| Dash
+    
+    G2 -.->|Officer clicks link| HTML_Report
 ```
 
 ## ⚙️ How we built it (Tech Stack & Integrations)
@@ -57,18 +84,17 @@ graph TD
 ### UiPath Integrations
 We integrated directly with several UiPath services to handle the enterprise routing and review process:
 
-1. **UiPath Action Center (Orchestrator REST API):** 
-   - **Usage:** When the pipeline finishes generating the SAR, it executes an OAuth 2.0 authenticated POST request to the Orchestrator API (`/odata/Tasks/UiPath.Server.Configuration.OData.CreateExternalTask`).
-   - **Purpose:** Creates a real "External Task" in Action Center so a human compliance officer can review and approve the AI-generated report before it is legally filed.
-2. **UiPath Data Service (REST API):**
-   - **Usage:** The pipeline uses the Data Service OData REST API to push the extracted entities and transaction metadata into a cloud entity.
-   - **Purpose:** Ensures that all evidence and AI decisions are stored in a centralized, auditable database.
-3. **UiPath Clipboard AI:**
-   - **Usage:** The dashboard formats the extracted FinCEN Form 111 data into a strict key-value text format and copies it to the clipboard.
-   - **Purpose:** Allows compliance officers to use Clipboard AI to intelligently paste the structured data directly into legacy banking terminal interfaces that do not support APIs.
-4. **UiPath Autopilot (Simulated Concept):**
-   - **Usage:** A contextual chat widget embedded in the dashboard.
-   - **Purpose:** Demonstrates how analysts can use Autopilot to ask questions about the current case's transaction graph (e.g., "Why was this risk score high?").
+1. **UiPath Maestro (Process Orchestration):**
+   - **Usage:** UiPath Maestro serves as the central brain of the investigation. It triggers the Python AI backend, waits for the multi-agent system to complete its tasks, and natively manages the routing of data between human decision gates.
+   - **Purpose:** Proves that complex multi-agent LLM architectures can be seamlessly governed by UiPath's enterprise process orchestration.
+2. **UiPath Action Center (Human-in-the-Loop):** 
+   - **Usage:** Maestro creates native Form Tasks in Action Center to present the AI's findings (Gate 1: Triage, Gate 2: BSA Sign-off) to the compliance officer. The Python server generates a dedicated `/report` HTML endpoint allowing the officer to review the massive 5-page SAR document securely before approving the Action Center ticket.
+   - **Purpose:** Keeps humans in charge at key decision points, preventing autonomous AI actions without strict compliance sign-off.
+3. **UiPath Autopilot:**
+   - **Usage:** Used live during the demonstration to explain the complex BPMN architecture, generate dynamic C# expressions to parse the AI's JSON outputs, and instantly summarize the massive SAR document.
+   - **Purpose:** Demonstrates how UiPath Autopilot accelerates both developer productivity and business user efficiency when interacting with external AI agents.
+4. **UiPath Integration Service (Slack / Jira):**
+   - **Usage:** Once Gate 2 is approved in Action Center, Maestro automatically triggers the final agent to dispatch alerts to enterprise channels.
 
 ## 🚧 Challenges we ran into
 Integrating a fully autonomous LangGraph pipeline with an asynchronous enterprise platform like UiPath Action Center was challenging. We had to ensure the AI gracefully paused its execution state while handling the OAuth 2.0 Bearer token lifecycle securely inside our Python microservice.

@@ -18,7 +18,7 @@ class GraphOutput(BaseModel):
 
 async def generate_report(state: GraphState) -> GraphOutput:
     # Choose your LLM provider by uncommenting one of the following:
-    llm = UiPathChatAnthropicBedrock(model="anthropic.claude-haiku-4-5-20251001-v1:0")
+    llm = UiPathChatAnthropicBedrock(model="meta.llama3-1-70b-instruct-v1:0")
     # llm = UiPathAzureChatOpenAI(model="gpt-4.1-mini-2025-04-14")
     # llm = UiPathChatGoogleGenerativeAI(model="gemini-2.5-flash")
     system_prompt = "You are a report generator. Please provide a brief report based on the given topic."

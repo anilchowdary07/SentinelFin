@@ -13,8 +13,8 @@
 "Here, a structuring alert just fired. Instantly, our Maestro case triggers Stage 1. Agent 1 uses LangChain to pull the customer's KYC and 90-day transaction history. In parallel, Agent 2 runs a sanctions check against OFAC lists, automatically handling API timeouts with exponential backoff."
 
 **[0:50 - 1:30] The "Wow" Moment: Dynamic Pattern Detection (Agent 3)**
-*Visual: Split screen. Left: Maestro process. Right: Terminal/Log view showing Claude Code generation.*
-"Now for the centerpiece: Agent 3. Instead of relying on rigid, pre-written rules, Agent 3 is a Coded Agent that calls an LLM dynamically. It looks at the specific alert type—in this case, structuring—and asks Claude to generate a custom Python detection script on the fly. 
+*Visual: Split screen. Left: Maestro process. Right: Terminal/Log view showing Llama 3.1 Code generation.*
+"Now for the centerpiece: Agent 3. Instead of relying on rigid, pre-written rules, Agent 3 is a Coded Agent that calls an LLM dynamically. It looks at the specific alert type—in this case, structuring—and asks Llama 3.1 to generate a custom Python detection script on the fly. 
 *(Point to logs)* 
 Here you can see the LLM writing the code, and here, our isolated environment executing it against the transactions to calculate a risk score of 85. If it fails, it degrades gracefully to a static rule, ensuring zero downtime."
 

@@ -28,7 +28,7 @@ class UiPathAPI:
             "grant_type": "client_credentials",
             "client_id": creds["client_id"],
             "client_secret": creds["client_secret"],
-            "scope": "OR.Tasks OR.Folders OR.BackgroundTasks OR.Tasks.Write OR.Tasks.Read DataService.Data.Write DataService.Schema.Read OR.Queues"
+            "scope": "OR.Tasks OR.Folders OR.BackgroundTasks OR.Tasks.Write OR.Tasks.Read OR.Queues"
         }
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
@@ -112,23 +112,32 @@ class UiPathAPI:
             return None
 
         creds = UiPathAPI.get_credentials()
-        url = f"https://cloud.uipath.com/{creds['org']}/{creds['tenant']}/orchestrator_/odata/Tasks/UiPath.Server.Configuration.OData.CreateExternalTask"
+        url = f"https://cloud.uipath.com/{creds['org']}/{creds['tenant']}/orchestrator_/tasks/GenericTasks/CreateTask"
         
         headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
-            "X-UIPATH-OrganizationUnitId": folder_id
+            "X-UIPATH-OrganizationUnitId": str(folder_id)
         }
 
+        import urllib.parse
+        import json
+        encoded_title = urllib.parse.quote(title)
+        encoded_data = urllib.parse.quote(json.dumps(data))
+        task_url = f"https://enedina-cordilleran-irwin.ngrok-free.dev/preview?title={encoded_title}&data={encoded_data}"
+
         payload = {
-            "Title": title,
-            "Priority": "High",
-            "Action": "Review Suspicious Activity Report",
-            "Data": data,
-            "ExternalTag": "SentinelFin-BSA-Review"
+            "title": title,
+            "priority": "High",
+            "type": "ExternalTask",
+            "action": "Review Suspicious Activity Report",
+            "data": data,
+            "externalTag": "SentinelFin-BSA-Review",
+            "taskUrl": task_url
         }
 
         print(f"[UIPATH API] Creating Action Center task in Orchestrator...")
+        print(f"[UIPATH API] 🚀 UI Preview Template generated: {task_url}")
         try:
             response = requests.post(url, json=payload, headers=headers, timeout=10)
             response.raise_for_status()

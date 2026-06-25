@@ -53,12 +53,39 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Broadcast System ─────────────────────────────────────────────────────────────
+class StreamBroadcaster:
+    def __init__(self):
+        self.queues = set()
+
+    def add_client(self) -> asyncio.Queue:
+        q = asyncio.Queue()
+        self.queues.add(q)
+        return q
+
+    def remove_client(self, q: asyncio.Queue):
+        self.queues.discard(q)
+
+    async def broadcast(self, event: str, data: dict):
+        msg = f"event: {event}\ndata: {json.dumps(data)}\n\n"
+        # Create a list of queues to avoid size changing during iteration
+        for q in list(self.queues):
+            await q.put(msg)
+
+broadcaster = StreamBroadcaster()
+
+
 # ── Schemas ────────────────────────────────────────────────────────────────────
 class CaseRequest(BaseModel):
     case_id: str
     alert_type: str = "SUSPECTED_LAYERING"
     transactions: List[dict] = []
     resilience_mode: bool = False          # NEW: triggers exceptional-path demo
+
+STATE_CACHE = {}
+
+class StateRequest(BaseModel):
+    case_id: str
 
 class AgentState(TypedDict):
     case_id: str
@@ -247,21 +274,98 @@ workflow.add_edge("submission", END)
 investigation_graph = workflow.compile()
 
 
+@app.get("/preview")
+async def action_center_preview(title: str = "Action Center Review", data: str = "{}"):
+    import json
+    from fastapi.responses import HTMLResponse
+    try:
+        parsed_data = json.loads(data)
+    except:
+        parsed_data = {"raw": data}
+        
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>{title}</title>
+        <style>
+            body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: #f4f6f8; color: #333; }}
+            .container {{ background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 800px; margin: 0 auto; }}
+            h2 {{ color: #fa4616; margin-top: 0; }}
+            .field {{ margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }}
+            .label {{ font-weight: 600; color: #555; font-size: 0.9em; text-transform: uppercase; }}
+            .value {{ margin-top: 5px; font-size: 1.1em; white-space: pre-wrap; }}
+            .footer {{ margin-top: 30px; padding-top: 20px; border-top: 2px solid #eee; font-size: 0.9em; color: #888; text-align: center; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h2>{title}</h2>
+            <p style="color: #666; margin-bottom: 30px;">Please review the data below. To approve, use the <b>Comments</b> panel on the right to leave notes, then click <b>Assign to self</b> and <b>Complete</b>.</p>
+    """
+    
+    for k, v in parsed_data.items():
+        html += f"""
+            <div class="field">
+                <div class="label">{k.replace('_', ' ')}</div>
+                <div class="value">{v}</div>
+            </div>
+        """
+        
+    html += """
+            <div class="footer">
+                UiPath Action Center — Powered by SentinelFin AI
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html)
+
 # ── SSE streaming endpoint ─────────────────────────────────────────────────────
 @app.post("/api/maestro/investigate")
-async def maestro_investigate(req: CaseRequest):
+@app.get("/api/monitor")
+async def monitor_stream():
+    """SSE endpoint that passively monitors global executions (triggered by Maestro)."""
+    async def event_generator():
+        q = broadcaster.add_client()
+        try:
+            while True:
+                msg = await q.get()
+                yield msg
+        except asyncio.CancelledError:
+            broadcaster.remove_client(q)
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+@app.get("/api/delay")
+async def dummy_delay():
+    """A bulletproof delay endpoint to replace public test servers in UiPath Maestro."""
+    await asyncio.sleep(2)
+    return {"status": "success", "message": "Delayed by 2 seconds"}
+
+
+@app.post("/api/investigate_part1")
+async def investigate_part1(req: CaseRequest):
     """
-    Synchronous endpoint for the UiPath Maestro Service Task.
-    Runs the entire LangGraph pipeline and returns the structured JSON payload.
-    WARNING: Depending on LLM latency, this could trigger a timeout in Maestro.
-    If timeout occurs (>60s), this architecture must be refactored to an async webhook pattern.
+    Maestro Sync Part 1: Runs Agents 1-4.
+    Broadcasts real-time events to the React Dashboard.
+    Returns the generated risk_score and massive JSON state to Maestro.
     """
-    print(f"\n[MAESTRO CASE INITIATED] Processing Case {req.case_id} synchronously...")
+    print(f"\n[MAESTRO SYNC] Part 1: Processing Case {req.case_id}...")
+    from integrations.document_parser import SAMPLE_JSON
+    import json
     
+    # If the user forgot to pass the full transactions array in UiPath, load the default!
+    actual_transactions = req.transactions
+    if not actual_transactions:
+        print("[MAESTRO SYNC] Warning: No transactions provided! Auto-loading mock data.")
+        mock_data = json.loads(SAMPLE_JSON)
+        actual_transactions = mock_data.get("transactions", [])
+
     initial_state: AgentState = {
         "case_id":              req.case_id,
         "alert_type":           req.alert_type,
-        "transactions":         req.transactions,
+        "transactions":         actual_transactions,
         "resilience_mode":      req.resilience_mode,
         "case_data":            {},
         "risk_score":           0,
@@ -277,20 +381,134 @@ async def maestro_investigate(req: CaseRequest):
         "action_center_item_id": ""
     }
 
-    # Run the graph synchronously
-    try:
-        final_state = await investigation_graph.ainvoke(initial_state)
-        return JSONResponse(content={
-            "case_id": final_state.get("case_id"),
-            "risk_score": final_state.get("risk_score"),
-            "sanctions_hits": final_state.get("sanctions_hits"),
-            "sar_narrative": final_state.get("sar_narrative"),
-            "fincen_form_111": final_state.get("fincen_form_111"),
-            "status": "COMPLETED"
-        })
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    loop = asyncio.get_event_loop()
+    state = initial_state.copy()
+    
+    NODES = ["triage", "sanctions", "pattern", "network"]
+    NODE_LABELS = ["Triage Analyst", "Sanctions Screener", "Pattern Detection (Llama 3.1)", "Network Investigator"]
+    node_funcs = [node_triage, node_sanctions, node_pattern, node_network]
 
+    await broadcaster.broadcast("agent_start", {"agent": 0, "name": "UiPath Maestro Orchestration"})
+    await asyncio.sleep(1)
+    await broadcaster.broadcast("agent_done", {"agent": 0, "name": "UiPath Maestro Orchestration", "detail": "Case Context Initialized"})
+
+    for idx, (fn, label, node_id) in enumerate(zip(node_funcs, NODE_LABELS, NODES), start=1):
+        await broadcaster.broadcast("agent_start", {"agent": idx, "name": label})
+        try:
+            state = await loop.run_in_executor(None, fn, state)
+            await broadcaster.broadcast("agent_done", {"agent": idx, "name": label, "job_key": "local_execution"})
+        except Exception as e:
+            await broadcaster.broadcast("agent_error", {"agent": idx, "name": label, "error": str(e)})
+
+    # Trigger pause UI for Action Center
+    await broadcaster.broadcast("agent_log", {"msg": "⏸️  Hitting Gate 1: Triage Analyst Review via Action Center API...", "type": "start"})
+    await broadcaster.broadcast("agent_pause", {"agent": 3, "name": "Gate 1: Triage Analyst Review", "job_key": "MAESTRO_NATIVE_FORM"})
+    
+    # Cache state globally so Maestro doesn't have to pass it back
+    STATE_CACHE[req.case_id] = state
+    
+    return JSONResponse(content={
+        "risk_score": state.get("risk_score"),
+        "status": "PAUSED_FOR_ACTION_CENTER"
+    })
+
+
+@app.post("/api/investigate_part2")
+async def investigate_part2(req: StateRequest):
+    """
+    Maestro Sync Part 2: Runs Agents 5-8.
+    Resumes execution after Maestro Native Action Center form is approved.
+    """
+    print(f"\n[MAESTRO SYNC] Part 2: Resuming Case {req.case_id} after Action Center approval...")
+    state = STATE_CACHE.get(req.case_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="State not found for this case_id. Did Part 1 finish?")
+        
+    loop = asyncio.get_event_loop()
+    
+    await broadcaster.broadcast("agent_resume", {"agent": 3, "name": "Gate 1: Triage Analyst Review"})
+
+    NODES = ["regulatory", "writer", "populator", "submission"]
+    NODE_LABELS = ["Regulatory Intel", "SAR Writer (Llama 3.1)", "Form 111 Populator", "Audit & Action Center"]
+    node_funcs = [node_regulatory, node_sar_writer, node_form_populator, node_submission_audit]
+
+    for idx, (fn, label, node_id) in enumerate(zip(node_funcs, NODE_LABELS, NODES), start=5):
+        await broadcaster.broadcast("agent_start", {"agent": idx, "name": label})
+        try:
+            state = await loop.run_in_executor(None, fn, state)
+            await broadcaster.broadcast("agent_done", {"agent": idx, "name": label, "job_key": "local_execution"})
+        except Exception as e:
+            await broadcaster.broadcast("agent_error", {"agent": idx, "name": label, "error": str(e)})
+
+    # Data Service sync
+    await broadcaster.broadcast("agent_start", {"agent": 9, "name": "Data Service (Sync)"})
+    from integrations.uipath_api import UiPathAPI
+    api_success = await loop.run_in_executor(None, UiPathAPI.push_to_data_service, state.get("case_data", {}))
+    if api_success:
+        await broadcaster.broadcast("agent_done", {"agent": 9, "name": "Data Service (Sync)", "detail": "Extracted Data Synced to UiPath Cloud"})
+    else:
+        await broadcaster.broadcast("agent_done", {"agent": 9, "name": "Data Service (Sync)", "detail": "Data Service Push Simulated"})
+
+    # Pause for Gate 2 instead of finishing
+    await broadcaster.broadcast("agent_log", {"msg": "⏸️  Hitting Gate 2: BSA Officer Review via Action Center API...", "type": "start"})
+    await broadcaster.broadcast("agent_pause", {"agent": 8, "name": "Gate 2: BSA Officer Review", "job_key": "MAESTRO_NATIVE_FORM"})
+
+    from fastapi.responses import PlainTextResponse
+    return PlainTextResponse(content=str(state.get("sar_narrative", "SAR Report Generated.")))
+
+@app.get("/report")
+async def view_report():
+    """Generates a beautiful HTML page of the SAR report for the BSA Officer to review."""
+    from fastapi.responses import HTMLResponse
+    if not STATE_CACHE:
+        return HTMLResponse(content="<h2>No SAR generated yet. Run the investigation first!</h2>")
+    
+    # Get the latest case from the cache
+    latest_state = list(STATE_CACHE.values())[-1]
+    sar_text = latest_state.get("sar_narrative", "No SAR narrative found.")
+    
+    html_content = f"""
+    <html>
+    <head><title>FinCEN SAR Report</title></head>
+    <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; max-width: 900px; margin: auto; line-height: 1.6; background-color: #f8fafc;">
+        <div style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-top: 8px solid #1e40af;">
+            <h1 style="color: #1e40af; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Suspicious Activity Report (SAR)</h1>
+            <p style="color: #64748b; font-weight: bold;">Tracking ID: {latest_state.get("fincen_tracking_id", "PENDING")} | Risk Score: {latest_state.get("risk_score", "N/A")}</p>
+            <div style="margin-top: 30px; font-size: 16px; white-space: pre-wrap; color: #334155;">
+{sar_text}
+            </div>
+            <div style="margin-top: 40px; text-align: center;">
+                <p style="color: #ef4444; font-weight: bold;">Please return to UiPath Action Center to Approve or Reject this report.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
+
+@app.post("/api/investigate_part3")
+async def investigate_part3(req: StateRequest):
+    """Resumes after Gate 2 and finishes the dashboard."""
+    state = STATE_CACHE.get(req.case_id, {})
+    await broadcaster.broadcast("agent_resume", {"agent": 8, "name": "Gate 2: BSA Officer Review"})
+    
+    await broadcaster.broadcast("agent_start", {"agent": 10, "name": "Integration Service"})
+    
+    from integrations.slack_notifier import SlackNotifier
+    slack_msg = f"🚨 *SentinelFin Alert* 🚨\nA critical money laundering case ({state.get('fincen_tracking_id', 'FC-12345')}) has been approved.\nA FinCEN SAR has been generated."
+    SlackNotifier.send_alert(slack_msg)
+    
+    await broadcaster.broadcast("agent_done", {"agent": 10, "name": "Integration Service", "detail": "Slack & Jira notified"})
+
+    await broadcaster.broadcast("result", {
+        "fincen_tracking_id": state.get("fincen_tracking_id", "FC-12345"),
+        "final_risk_score": state.get("risk_score", 0),
+        "pattern_name": state.get("pattern_name", "Unknown"),
+        "action_center_item_id": "AC-999",
+        "sar_narrative": state.get("sar_narrative", ""),
+        "fincen_form_111": state.get("fincen_form_111", {})
+    })
+    return JSONResponse(content={"status": "COMPLETED"})
 
 async def run_pipeline_stream(req: CaseRequest) -> AsyncGenerator[str, None]:
     """Runs the pipeline in a thread and streams SSE events to the client."""
@@ -353,7 +571,9 @@ async def run_pipeline_stream(req: CaseRequest) -> AsyncGenerator[str, None]:
             yield sse("agent_pause", {"agent": 3, "name": "Gate 1: Triage Analyst Review", "job_key": task_id or "API_SIMULATION"})
             
             # Simulate waiting for human approval
-            await asyncio.sleep(4) 
+            for i in range(90):
+                yield sse("agent_ping", {"msg": "keepalive", "pad": " " * 4096})
+                await asyncio.sleep(1)
             yield sse("agent_resume", {"agent": 3, "name": "Gate 1: Triage Analyst Review"})
 
         # === HITL GATE 2: BSA Officer Review ===
@@ -370,7 +590,9 @@ async def run_pipeline_stream(req: CaseRequest) -> AsyncGenerator[str, None]:
             yield sse("agent_pause", {"agent": 7, "name": "Gate 2: BSA Officer Review", "job_key": task_id or "API_SIMULATION"})
             
             # Simulate waiting for human approval
-            await asyncio.sleep(4)
+            for i in range(90):
+                yield sse("agent_ping", {"msg": "keepalive", "pad": " " * 4096})
+                await asyncio.sleep(1)
             yield sse("agent_resume", {"agent": 7, "name": "Gate 2: BSA Officer Review"})
 
         # Proceed with normal agent execution

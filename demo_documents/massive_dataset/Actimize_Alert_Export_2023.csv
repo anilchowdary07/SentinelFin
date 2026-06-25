@@ -1,0 +1,4 @@
+TransactionID,Date,Originator,Beneficiary,Amount,Currency,Alert_Type,Risk_Score
+TXN-998811,2023-10-25T10:00:00Z,Global Trade Corp,Shell Co Holdings,50000.00,USD,SUSPECTED_LAYERING,85
+TXN-998812,2023-10-25T11:30:00Z,Shell Co Holdings,Offshore Trust LLC,49500.00,USD,SUSPECTED_LAYERING,90
+TXN-998813,2023-10-26T09:15:00Z,Global Trade Corp,Phantom Logistics,75000.00,USD,HIGH_VELOCITY,78
