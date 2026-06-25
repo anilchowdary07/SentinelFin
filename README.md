@@ -42,7 +42,7 @@ graph TD
         A8 --> M_End
     end
     
-    subgraph External Agentic Backend (Python)
+    subgraph External Agentic Backend - Python
         F_API1(FastAPI: Part 1)
         F_API2(FastAPI: Part 2)
         F_API3(FastAPI: Part 3)
@@ -53,7 +53,7 @@ graph TD
         F_API2 -.->|Calls LLM| LLM
     end
     
-    subgraph Custom UI (React)
+    subgraph Custom UI - React
         Dash[SentinelFin Passive Dashboard]
         HTML_Report[Dedicated /report Document]
     end
