@@ -6,8 +6,14 @@ SentinelFin is a prototype Anti-Money Laundering (AML) application. It demonstra
 
 ---
 
-## 💡 Inspiration
-Banks spend billions manually investigating AML alerts. A typical compliance analyst spends hours reviewing raw SWIFT logs, correlating entities, and drafting Suspicious Activity Reports (SARs) manually. This extreme bottleneck leads to SLA breaches and analyst burnout. We wanted to build a solution that doesn't just summarize text, but actively orchestrates a compliant investigation pipeline.
+## 💡 The Business Problem: Why SARs Matter
+**What is a SAR?** A Suspicious Activity Report (SAR) is a highly detailed, legally mandated document that financial institutions must file with government intelligence networks (like FinCEN) whenever they detect potential money laundering or terrorist financing.
+
+**What happens without it?** If a bank fails to file a SAR on time, or files an inaccurate one, governments impose **catastrophic multi-billion dollar fines**. In 2023 alone, banks were fined over $5 Billion for AML compliance failures. 
+
+**The Bottleneck:** To avoid these fines, banks hire massive armies of compliance analysts. A typical analyst spends 4 to 8 hours manually reviewing raw SWIFT logs, correlating shell companies, and drafting a single 5-page SAR narrative. This extreme bottleneck leads to regulatory SLA breaches, immense operational costs, and analyst burnout. 
+
+**Our Solution (What we are saving):** SentinelFin doesn't just summarize text—it actively orchestrates the entire compliant investigation pipeline. By using an 8-Agent Llama 3.1 architecture strictly governed by UiPath Maestro, we reduce the investigation and drafting time from **8 hours to 30 seconds**. This saves millions in operational overhead, eliminates the risk of SLA-breach fines, and allows human BSA Officers to focus purely on the final legal review rather than manual data entry.
 
 ## 💻 What it does (The Data Pipeline)
 SentinelFin ingests raw transactional data, processes it through specialized AI agents to determine risk, and prepares a SAR for final human review.
