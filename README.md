@@ -29,38 +29,48 @@ SentinelFin ingests raw transactional data, processes it through specialized AI 
 
 ```mermaid
 graph TD
-    %% 1. Maestro Orchestrator
-    subgraph UiPath Maestro Orchestrator
-        M1((Alert)) --> M2[Agent 1: Triage Trigger]
-        M2 --> G1{Gate 1: Analyst}
-        G1 -->|Approve| M3[Agent 4: AI Trigger]
-        M3 --> G2{Gate 2: BSA Officer}
-        G2 -->|Approve| M4[Agent 8: Final Sync]
-        M4 --> M5((Case Closed))
+    %% Initial Trigger
+    M_Start((Alert Intake)) -->|Maestro Triggers API| P1
+    
+    %% Backend Part 1
+    subgraph FastAPI Python Backend: Part 1
+        P1[Agent 1: Context] --> P2[Agent 2: Sanctions]
+        P2 --> P3[Agent 3: Pattern Coding]
     end
-
-    %% 2. Python Backend
-    subgraph Python Agentic Backend
-        API(FastAPI Multi-Agent Server)
-        LLM{Llama 3.1 70B}
-        
-        API <-->|Dynamic Code & Prompts| LLM
+    
+    %% First Human Gate
+    P3 -->|Returns Risk| Gate1{Maestro Gate 1: Triage Analyst}
+    Gate1 -->|Approve / Trigger Part 2| P4
+    
+    %% Backend Part 2
+    subgraph FastAPI Python Backend: Part 2
+        P4[Agent 4: Network] --> P5[Agent 5: Reg Intel]
+        P5 --> P6[Agent 6: SAR Writer]
+        P6 --> P7[Agent 7: Form 111 Data]
     end
-
-    %% 3. User Interfaces
-    subgraph End-User Interfaces
-        UI_Dash[React Dashboard]
-        UI_Report[Generated HTML SAR Report]
+    
+    %% Second Human Gate
+    P7 -->|Returns SAR JSON| Gate2{Maestro Gate 2: BSA Officer}
+    Gate2 -->|Approve / Trigger Part 3| P8
+    
+    %% Backend Part 3
+    subgraph FastAPI Python Backend: Part 3
+        P8[Agent 8: Final Sync & Slack Alerts]
     end
-
-    %% Connections (Vertical flow)
-    M2 ==>|HTTP POST| API
-    M3 ==>|HTTP POST| API
-    M4 ==>|HTTP POST| API
-
-    API -.->|Live Server-Sent Events| UI_Dash
-    API -.->|Generates Document| UI_Report
-    G2 -.->|Officer clicks link to review| UI_Report
+    
+    P8 -->|Final Handoff| M_End((Maestro Case Closed))
+    
+    %% Custom UI Integration
+    subgraph Real-Time Custom UI
+        Dash[React Dashboard - Live Sync]
+        Report[Dedicated HTML SAR Document]
+    end
+    
+    %% UI SSE Streams
+    P1 -.->|Live SSE Stream| Dash
+    P4 -.->|Live SSE Stream| Dash
+    P8 -.->|100% Complete| Dash
+    Gate2 -.->|Officer clicks link| Report
 ```
 
 ## ⚙️ How we built it (Tech Stack & Integrations)
