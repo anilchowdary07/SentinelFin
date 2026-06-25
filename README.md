@@ -29,46 +29,38 @@ SentinelFin ingests raw transactional data, processes it through specialized AI 
 
 ```mermaid
 graph TD
-    subgraph UiPath Enterprise Governance - Maestro
-        M_Start((Start Alert))
-        M_Start --> A1[Agent 1: Initial Investigation]
-        A1 --> G1{Gate 1: Triage Analyst}
-        
-        G1 -->|Approve| A4[Agent 4: Deep AI Investigation]
-        G1 -->|Reject| M_End((End))
-        
-        A4 --> G2{Gate 2: BSA Officer}
-        G2 -->|Approve| A8[Agent 8: Final Sync]
-        A8 --> M_End
+    %% 1. Maestro Orchestrator
+    subgraph UiPath Maestro Orchestrator
+        M1((Alert)) --> M2[Agent 1: Triage Trigger]
+        M2 --> G1{Gate 1: Analyst}
+        G1 -->|Approve| M3[Agent 4: AI Trigger]
+        M3 --> G2{Gate 2: BSA Officer}
+        G2 -->|Approve| M4[Agent 8: Final Sync]
+        M4 --> M5((Case Closed))
     end
-    
-    subgraph External Agentic Backend - Python
-        F_API1(FastAPI: Part 1)
-        F_API2(FastAPI: Part 2)
-        F_API3(FastAPI: Part 3)
+
+    %% 2. Python Backend
+    subgraph Python Agentic Backend
+        API(FastAPI Multi-Agent Server)
+        LLM{Llama 3.1 70B}
         
-        LLM[AWS Bedrock Llama 3.1]
-        
-        F_API1 -.->|Calls LLM| LLM
-        F_API2 -.->|Calls LLM| LLM
+        API <-->|Dynamic Code & Prompts| LLM
     end
-    
-    subgraph Custom UI - React
-        Dash[SentinelFin Passive Dashboard]
-        HTML_Report[Dedicated /report Document]
+
+    %% 3. User Interfaces
+    subgraph End-User Interfaces
+        UI_Dash[React Dashboard]
+        UI_Report[Generated HTML SAR Report]
     end
-    
-    %% Maestro HTTP Connections
-    A1 ==>|HTTP POST| F_API1
-    A4 ==>|HTTP POST| F_API2
-    A8 ==>|HTTP POST| F_API3
-    
-    %% UI and Human Connections
-    F_API1 -.->|Streams real-time SSE| Dash
-    F_API2 -.->|Streams real-time SSE| Dash
-    F_API3 -.->|Streams 100% Complete| Dash
-    
-    G2 -.->|Officer clicks link| HTML_Report
+
+    %% Connections (Vertical flow)
+    M2 ==>|HTTP POST| API
+    M3 ==>|HTTP POST| API
+    M4 ==>|HTTP POST| API
+
+    API -.->|Live Server-Sent Events| UI_Dash
+    API -.->|Generates Document| UI_Report
+    G2 -.->|Officer clicks link to review| UI_Report
 ```
 
 ## ⚙️ How we built it (Tech Stack & Integrations)
