@@ -29,41 +29,48 @@ SentinelFin ingests raw transactional data, processes it through specialized AI 
 
 ```mermaid
 graph TD
+    %% Define Colors
+    classDef uipath fill:#FA4616,stroke:#333,stroke-width:2px,color:#fff;
+    classDef python fill:#1E2749,stroke:#4A90E2,stroke-width:2px,color:#fff;
+    classDef gate fill:#FFC107,stroke:#F57C00,stroke-width:2px,color:#000;
+    classDef ui fill:#E8EAF6,stroke:#3F51B5,stroke-width:2px,color:#000;
+    classDef finish fill:#4CAF50,stroke:#388E3C,stroke-width:2px,color:#fff;
+
     %% Initial Trigger
-    M_Start((Alert Intake)) -->|Maestro Triggers API| P1
+    M_Start((Alert Intake)):::uipath -->|Maestro Triggers API| P1
     
     %% Backend Part 1
     subgraph FastAPI Python Backend: Part 1
-        P1[Agent 1: Context] --> P2[Agent 2: Sanctions]
-        P2 --> P3[Agent 3: Pattern Coding]
+        P1[Agent 1: Context]:::python --> P2[Agent 2: Sanctions]:::python
+        P2 --> P3[Agent 3: Pattern Coding]:::python
     end
     
     %% First Human Gate
-    P3 -->|Returns Risk| Gate1{Maestro Gate 1: Triage Analyst}
+    P3 -->|Returns Risk| Gate1{Maestro Gate 1: Triage Analyst}:::gate
     Gate1 -->|Approve / Trigger Part 2| P4
     
     %% Backend Part 2
     subgraph FastAPI Python Backend: Part 2
-        P4[Agent 4: Network] --> P5[Agent 5: Reg Intel]
-        P5 --> P6[Agent 6: SAR Writer]
-        P6 --> P7[Agent 7: Form 111 Data]
+        P4[Agent 4: Network]:::python --> P5[Agent 5: Reg Intel]:::python
+        P5 --> P6[Agent 6: SAR Writer]:::python
+        P6 --> P7[Agent 7: Form 111 Data]:::python
     end
     
     %% Second Human Gate
-    P7 -->|Returns SAR JSON| Gate2{Maestro Gate 2: BSA Officer}
+    P7 -->|Returns SAR JSON| Gate2{Maestro Gate 2: BSA Officer}:::gate
     Gate2 -->|Approve / Trigger Part 3| P8
     
     %% Backend Part 3
     subgraph FastAPI Python Backend: Part 3
-        P8[Agent 8: Final Sync & Slack Alerts]
+        P8[Agent 8: Final Sync & Slack Alerts]:::python
     end
     
-    P8 -->|Final Handoff| M_End((Maestro Case Closed))
+    P8 -->|Final Handoff| M_End((Maestro Case Closed)):::finish
     
     %% Custom UI Integration
     subgraph Real-Time Custom UI
-        Dash[React Dashboard - Live Sync]
-        Report[Dedicated HTML SAR Document]
+        Dash[React Dashboard - Live Sync]:::ui
+        Report[Dedicated HTML SAR Document]:::ui
     end
     
     %% UI SSE Streams
