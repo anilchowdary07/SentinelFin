@@ -10,9 +10,9 @@ SentinelFin is a prototype Anti-Money Laundering (AML) application. It demonstra
 ---
 
 ## 1. Project Description (What it does & The Problem)
-**The Problem:** Over the last two years, global regulators handed down nearly $7 Billion in Anti-Money Laundering (AML) fines. To avoid these fines, banks hire armies of compliance analysts who spend up to 8 hours manually jumping between disconnected legacy silos, rigid CSV exports, and cryptic SWIFT messages just to draft a single Suspicious Activity Report (SAR). This causes extreme analyst burnout and missed deadlines.
+**The Problem:** Over the last two years, global regulators handed down nearly $7 Billion in Anti-Money Laundering (AML) fines. To avoid these fines, banks hire armies of compliance analysts who spend several hours manually jumping between disconnected legacy silos, rigid CSV exports, and cryptic SWIFT messages just to draft a single Suspicious Activity Report (SAR). This causes extreme analyst burnout and missed deadlines.
 
-**What it does:** SentinelFin doesn't just summarize text—it actively orchestrates the entire compliant investigation pipeline. By using a massive 8-Agent Llama 3.1 architecture strictly governed by UiPath Maestro, I reduce the investigation and drafting time of a legally-complex SAR from **8 hours to under 5 minutes**. This saves millions in operational overhead and allows human BSA Officers to focus purely on the final legal review rather than manual data entry.
+**What it does:** SentinelFin doesn't just summarize text—it actively orchestrates the entire compliant investigation pipeline. By using a massive 8-Agent Llama 3.1 architecture strictly governed by UiPath Maestro, I reduce the investigation and drafting time of a legally-complex SAR from **several hours to under 5 minutes**. This saves millions in operational overhead and allows human BSA Officers to focus purely on the final legal review rather than manual data entry.
 
 ## 2. Agent Type Declaration
 **Agent Type:** This solution utilizes a custom, external **LangGraph/Python Agent framework** rather than native UiPath Coded Agents or Low-code Agents. The AI reasoning happens externally via Python microservices, while UiPath Maestro acts as the strict enterprise governor and orchestrator. 
