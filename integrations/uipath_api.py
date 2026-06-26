@@ -124,7 +124,9 @@ class UiPathAPI:
         import json
         encoded_title = urllib.parse.quote(title)
         encoded_data = urllib.parse.quote(json.dumps(data))
-        task_url = f"https://enedina-cordilleran-irwin.ngrok-free.dev/preview?title={encoded_title}&data={encoded_data}"
+        import os
+        base_url = os.environ.get("FRONTEND_BASE_URL", "http://localhost:5173")
+        task_url = f"{base_url}/preview?title={encoded_title}&data={encoded_data}"
 
         payload = {
             "title": title,

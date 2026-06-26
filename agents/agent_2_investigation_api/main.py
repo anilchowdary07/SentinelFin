@@ -23,7 +23,8 @@ def call_api(state: AgentState):
         "force_api_failure": False
     }
     
-    url = "https://enedina-cordilleran-irwin.ngrok-free.app/api/investigate"
+    import os
+    url = os.getenv("API_BASE_URL", "http://localhost:8000/api/investigate")
     headers = {
         "Content-Type": "application/json",
         "ngrok-skip-browser-warning": "true"
