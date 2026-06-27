@@ -4,8 +4,6 @@ SentinelFin is a prototype Anti-Money Laundering (AML) application. It demonstra
 
 > **🏅 Hackathon Track:** This project is submitted under **Track 1: UiPath Maestro Case**. SentinelFin orchestrates a dynamic, exception-heavy AML investigation using UiPath case management capabilities. Because financial crime investigations have unpredictable paths and require moving work through distinct stages (Intake ➔ Investigation ➔ SAR Filing), a Maestro Case acts as the top-level orchestrator. It seamlessly manages handoffs between my external LangGraph AI agents, enterprise UiPath APIs, and human BSA Officers—keeping humans in charge at key decision points.
 
-## 🎥 Demo Video
-[Insert your YouTube/Vimeo Link Here]
 
 ---
 
