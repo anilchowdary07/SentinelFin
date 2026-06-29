@@ -23,7 +23,7 @@ class UiPathAPI:
             print("[UIPATH API] Error: Missing Client ID or Secret in .env")
             return None
 
-        url = "https://cloud.uipath.com/identity_/connect/token"
+        url = "https://staging.uipath.com/identity_/connect/token"
         payload = {
             "grant_type": "client_credentials",
             "client_id": creds["client_id"],
@@ -54,7 +54,7 @@ class UiPathAPI:
 
         creds = UiPathAPI.get_credentials()
         entity_name = "SentinelFin_SAR_Records"
-        url = f"https://cloud.uipath.com/{creds['org']}/{creds['tenant']}/dataservice_/odata/{entity_name}"
+        url = f"https://staging.uipath.com/{creds['org']}/{creds['tenant']}/dataservice_/odata/{entity_name}"
         
         headers = {
             "Authorization": f"Bearer {token}",
@@ -77,7 +77,7 @@ class UiPathAPI:
     def get_default_folder_id(token: str) -> str:
         """Fetch the OrganizationUnitId for the 'Default' or first available Orchestrator Folder."""
         creds = UiPathAPI.get_credentials()
-        url = f"https://cloud.uipath.com/{creds['org']}/{creds['tenant']}/orchestrator_/odata/Folders"
+        url = f"https://staging.uipath.com/{creds['org']}/{creds['tenant']}/orchestrator_/odata/Folders"
         
         headers = {
             "Authorization": f"Bearer {token}",
@@ -112,7 +112,7 @@ class UiPathAPI:
             return None
 
         creds = UiPathAPI.get_credentials()
-        url = f"https://cloud.uipath.com/{creds['org']}/{creds['tenant']}/orchestrator_/tasks/GenericTasks/CreateTask"
+        url = f"https://staging.uipath.com/{creds['org']}/{creds['tenant']}/orchestrator_/tasks/GenericTasks/CreateTask"
         
         headers = {
             "Authorization": f"Bearer {token}",
