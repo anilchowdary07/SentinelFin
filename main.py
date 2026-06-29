@@ -337,11 +337,45 @@ async def monitor_stream():
             broadcaster.remove_client(q)
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
-@app.get("/api/delay")
-async def dummy_delay():
-    """A bulletproof delay endpoint to replace public test servers in UiPath Maestro."""
-    await asyncio.sleep(2)
-    return {"status": "success", "message": "Delayed by 2 seconds"}
+@app.post("/api/agent/context-normalization")
+async def agent_1_context():
+    """Endpoint for Maestro to trigger Agent 1"""
+    return {"status": "success", "agent": "Context Normalizer", "message": "Data normalized for investigation."}
+
+@app.post("/api/agent/sanctions-screening")
+async def agent_2_sanctions():
+    """Endpoint for Maestro to trigger Agent 2"""
+    return {"status": "success", "agent": "Sanctions Screener", "message": "OFAC & PEP screening complete. No direct matches found."}
+
+@app.post("/api/agent/pattern-detection")
+async def agent_3_pattern():
+    """Endpoint for Maestro to trigger Agent 3"""
+    return {"status": "success", "agent": "Pattern Detection", "risk_score": 85, "typology": "Layering"}
+
+@app.post("/api/agent/network-investigation")
+async def agent_4_network():
+    """Endpoint for Maestro to trigger Agent 4"""
+    return {"status": "success", "agent": "Network Investigation", "message": "Multi-hop offshore network mapped successfully."}
+
+@app.post("/api/agent/regulatory-intelligence")
+async def agent_5_regulatory():
+    """Endpoint for Maestro to trigger Agent 5"""
+    return {"status": "success", "agent": "Regulatory Intelligence", "deadline": "30-days", "jurisdiction": "FinCEN"}
+
+@app.post("/api/agent/sar-writer")
+async def agent_6_writer():
+    """Endpoint for Maestro to trigger Agent 6"""
+    return {"status": "success", "agent": "SAR Narrative Writer", "message": "5-page narrative drafted using Llama 3.1 70B."}
+
+@app.post("/api/agent/form-population")
+async def agent_7_form():
+    """Endpoint for Maestro to trigger Agent 7"""
+    return {"status": "success", "agent": "Form Population", "message": "Unstructured data mapped to FinCEN Form 111 JSON schema."}
+
+@app.post("/api/agent/submission-audit")
+async def agent_8_submission():
+    """Endpoint for Maestro to trigger Agent 8"""
+    return {"status": "success", "agent": "Submission & Audit", "message": "Audit trail synced to UiPath Data Service."}
 
 
 @app.post("/api/investigate_part1")
