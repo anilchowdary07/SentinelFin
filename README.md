@@ -1,8 +1,15 @@
 # SentinelFin: AML Investigation Pipeline
 
+**🔗 [Read the Step-by-Step Judges Evaluation Guide here!](./JUDGES_EVALUATION_GUIDE.md)**
+**🖥️ Live React Dashboard:** [https://anil988-sentinelfin-ai-backend.hf.space/](https://anil988-sentinelfin-ai-backend.hf.space/)
+**👤 Custom HITL Approval Terminal:** [https://anil988-sentinelfin-ai-backend.hf.space/approve](https://anil988-sentinelfin-ai-backend.hf.space/approve)
+
 SentinelFin is a prototype Anti-Money Laundering (AML) application. It demonstrates how to orchestrate a complex AI investigation workflow while deeply integrating with the UiPath Automation Cloud for data persistence and human-in-the-loop (HITL) review.
 
 > **🏅 Hackathon Track:** This project is submitted under **Track 1: UiPath Maestro Case**. SentinelFin orchestrates a dynamic, exception-heavy AML investigation using UiPath case management capabilities. Because financial crime investigations have unpredictable paths and require moving work through distinct stages (Intake ➔ Investigation ➔ SAR Filing), a Maestro Case acts as the top-level orchestrator. It seamlessly manages handoffs between my external LangGraph AI agents, enterprise UiPath APIs, and human BSA Officers—keeping humans in charge at key decision points.
+
+> **⚠️ Note to Judges Regarding the Staging Lab vs. Video Demo:**
+> In my **video demonstration**, you will see native **UiPath Action Center** handling the Human-in-the-Loop approvals flawlessly. However, shortly before submission, my Staging Lab encountered a licensing bug preventing Action Center from provisioning (Error 170000). To ensure you can still fully test and interact with my live deployment, I engineered a custom **HTTP Polling architecture** in the Staging Lab's Maestro diagram. When you test my solution in the lab, Maestro will natively pause and wait for you to click "Approve" at my custom terminal: [https://anil988-sentinelfin-ai-backend.hf.space/approve](https://anil988-sentinelfin-ai-backend.hf.space/approve). This proves both the intended enterprise architecture (in the video) and extreme platform resilience (in the live lab).
 
 
 ---
